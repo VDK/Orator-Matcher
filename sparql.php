@@ -45,6 +45,5 @@ else{ ?>
 
 
 ?>
-</ul>
 </body>
 </html>	
