@@ -30,7 +30,6 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en,de\". }            
 			}.filter(NOT EXISTS { ?item wdt:P570  [] } 
                   || ?dateOfDeath >= \"".(date("Y")-2)."-01-01T00:00:00Z\"^^xsd:dateTime )
-                  .  BIND(COALESCE(?isSportsPerson_, false) AS ?isSportsPerson)
 		}";
 
 		$url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?' . http_build_query(
