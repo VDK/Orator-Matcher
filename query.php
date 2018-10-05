@@ -41,7 +41,9 @@ if ($query['searchinfo']['totalhits'] >= 1){
 		$data = json_decode( $json, true );
 		$occupations = array();
 		foreach ($data['results']['bindings'] as $key => $item) {
-			$occupations[] = $item['occupationLabel']['value'];
+			if(isset($item['occupationLabel'])){
+				$occupations[] = $item['occupationLabel']['value'];
+			}
 		}
 		$occupations = array_unique($occupations);
 		if (isset($data['results']['bindings'][0]) ) {

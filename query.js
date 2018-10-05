@@ -56,7 +56,7 @@ $(function(){
           var weights = new Array();
           for (var i = this.parentElement.children.length - 1; i >= 0; i--) {
             if(this.parentElement.children[i].getAttribute('class').indexOf("isSportsPerson") == '-1'){
-              weights.push(this.parentElement.children[i].getAttribute('weight'));
+              weights.push(parseInt(this.parentElement.children[i].getAttribute('weight')));
             }
           }
           if(weights.length == 0){
@@ -71,7 +71,7 @@ $(function(){
     }
     else{
       $('.isSportsPerson').each(function(){
-        if (this.getAttribute('weight') > this.parentElement.parentElement.getAttribute('weight')){
+        if (parseInt(this.getAttribute('weight')) > parseInt(this.parentElement.parentElement.getAttribute('weight'))){
           this.parentElement.parentElement.setAttribute('weight', this.getAttribute('weight'));
         }
       });

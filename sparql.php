@@ -29,7 +29,7 @@ else{ ?>
     </div>
 </form>
 <div id='progressbar'></div>
-	<ul id='names'>";
+	<ul id='names'>
 	<?php
 	$names = $_GET['name'];
 	$names = array_unique($names);
