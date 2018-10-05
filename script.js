@@ -39,4 +39,11 @@ $(document).ready(function() {
 	    });
 	}
 
+	$('textarea.retracted').focus(function () {
+    	$(this).animate({ height: "200px" }, 500); 
+	});
+	$('textarea.retracted').focusout(function () {
+    	$(this).animate({ height: "40px" }, 500); 
+	});
+
 });

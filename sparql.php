@@ -11,7 +11,7 @@
 
 <script type="text/javascript" src="plugins/deference/js/deference.js"></script>
 <script type="text/javascript" src="query.js"></script>
-<title>Orator matcher</title>
+<title>Orator Matcher</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 </head>
 <body>

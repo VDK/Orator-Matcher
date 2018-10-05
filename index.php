@@ -8,17 +8,18 @@ $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</
 $blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY");
 $error = '';
 if (isset($_POST['url']) && $_POST['url'] != '' ){
-	if (!filter_var($_POST['url'], FILTER_VALIDATE_URL)){
+	$url = trim($_POST['url']);
+	if (!filter_var($url, FILTER_VALIDATE_URL)){
 		$error = 'That doesn\'t look like a url';
 	}
-	elseif (is_404($_POST['url']) ) {
+	elseif (is_404($url)) {
 		$error = '404 page not found';
 	}
 	else{
 		$readability = new Readability(new Configuration());
-		$opts = array('http'=>array('header' => "User-Agent:MyAgent/1.0\r\n"));
+		$opts = array('http'=>array('header' => "User-Agent:Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0"));
 		$context = stream_context_create($opts);
-		$html = file_get_contents($_POST['url'], false, $context);
+		$html = file_get_contents($url, false, $context);
 
 		try {
 		    $readability->parse($html);
@@ -27,7 +28,6 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		} catch (ParseException $e) {
 			//might as well use the old method if Readability fails:
 			$ch = curl_init();
-			$url = $_POST[ 'url']; 
 			$request_headers = array();
 			$request_headers[] = 'x-api-key: ' . $postlightAPI;
 			$request_headers[] = "Content-Type: application/json; charset=utf-8";
@@ -90,7 +90,7 @@ elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) &&
 function is_404($url) {
     $handle = curl_init($url);
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($handle, CURLOPT_USERAGENT, "User-Agent:MyAgent/1.0\r\n");
+    curl_setopt($handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0");
     /* Get the HTML or whatever is linked in $url. */
     $response = curl_exec($handle);
 
@@ -111,21 +111,19 @@ function is_404($url) {
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <link rel="stylesheet" href="style.css">
 <script type="text/javascript" src="script.js"></script>
-<title>Orator matcher</title>
+<title>Orator Matcher</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 <meta charset="UTF-8">
 </head>
 <body>
 	<form class="form-wrapper"  method="POST"  target='_self' id="form"	>
 	<div style='color:red; clear:both;'><?php echo $error; ?></div>
-   <div> <input type="text" id="url" placeholder="Article URL" name='url' >
+   <div> <input type="text" id="url" placeholder="URL to the list of conference speakers" name='url' >
 
-<?php
-if (!isset($names)){
-echo "<div style='clear:both'>Or a list of names:</div>";
-echo "<textarea rows='10'  cols='50' name='names' form='form'></textarea>";
-}
-?>
+
+<div id='showTex' style='clear:both; '>OR a list of names:</div>
+<textarea rows='10'  cols='50' name='names' form='form' class='<?php echo (isset($names)? 'retracted' :'expand'); ?>'></textarea>
+
 
     <input type="submit" class='button' value="go" id="submit"></div> 	
 </form>
