@@ -1,3 +1,4 @@
 <?php
 $postlightAPI = '';
+$flickrAPIkey = '';
 ?>
