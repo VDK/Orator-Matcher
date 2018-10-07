@@ -7,12 +7,41 @@ use andreskrey\Readability\Configuration;
 $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY");
 $error = '';
+$result = '';
 if (isset($_POST['url']) && $_POST['url'] != '' ){
 	$url = trim($_POST['url']);
 	if (!filter_var($url, FILTER_VALIDATE_URL)){
+		$url = 'https://'.$url;
+	}
+	if (!filter_var($url, FILTER_VALIDATE_URL)){
 		$error = 'That doesn\'t look like a url';
 	}
-	elseif (is_404($url)) {
+	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/albums\/(\d+)/", $url, $matches )){
+		$result = array();
+		$params = array(
+			'api_key'		=> $flickrAPIkey,
+			'method'		=> 'flickr.photosets.getInfo',
+			'photoset_id'	=> end($matches),
+			'format'		=> 'php_serial',
+		);
+		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+
+		$result[] = $response['photoset']['title']['_content'];
+		$result[] = $response['photoset']['description']['_content'];
+
+		$params['method'] = 'flickr.photosets.getPhotos';
+		$params['extras'] = 'description';
+
+		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+		
+		foreach ($response['photoset']['photo'] as $key => $value) {
+			$result[] = $value['title'];
+			$result[] = $value['description']['_content'];
+		}
+		$result = array_unique($result);
+		$result = trim(implode("\n", $result));
+	}
+	elseif (is_404($url) && $result == '') {
 		$error = '404 page not found';
 	}
 	else{
@@ -45,6 +74,8 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		if ($result == ''){
 			$result = $html;
 		}
+	}
+	if ($result != ''){
 
 		$result = str_replace($tags,"\n",$result);
 		$result = strip_tags($result);
