@@ -4,6 +4,7 @@ include_once('vendor/autoload.php');
 include_once('variables.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
+header('Content-Type: text/html; charset=utf-8');
 $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY");
 $error = '';
@@ -16,8 +17,8 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 	if (!filter_var($url, FILTER_VALIDATE_URL)){
 		$error = 'That doesn\'t look like a url';
 	}
-	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/albums\/(\d+)/", $url, $matches )){
-		$result = array();
+	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/(albums|sets)\/(\d+)/", $url, $matches )){
+		
 		$params = array(
 			'api_key'		=> $flickrAPIkey,
 			'method'		=> 'flickr.photosets.getInfo',
@@ -25,24 +26,52 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			'format'		=> 'php_serial',
 		);
 		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+		if (isset($response['photoset'])){
+			$result = array();
+			$tags   = array();
+			$result[] = $response['photoset']['title']['_content'];
+			$result[] = $response['photoset']['description']['_content'];
+	
+			$params['method'] = 'flickr.photosets.getPhotos';
+			$params['extras'] = 'description, tags';
+	
+			$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
 
-		$result[] = $response['photoset']['title']['_content'];
-		$result[] = $response['photoset']['description']['_content'];
+			
+			$params['method'] = 'flickr.tags.getListPhoto';
+			unset($params['extras']);
+			unset($params['photoset_id']);
 
-		$params['method'] = 'flickr.photosets.getPhotos';
-		$params['extras'] = 'description';
-
-		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
-		
-		foreach ($response['photoset']['photo'] as $key => $value) {
-			$result[] = $value['title'];
-			$result[] = $value['description']['_content'];
+			foreach ($response['photoset']['photo'] as $photo) {
+				$result[] = $photo['title'];
+				$result[] = $photo['description']['_content'];
+				$newTags  = explode(" ", $photo['tags']); 
+				$newTags  = array_diff($newTags, $tags);
+				$tagLengths = array();
+				foreach ($newTags as $tag) {
+					$tagLengths[] = strlen($tag);
+				}
+				rsort($tagLengths);
+				if (count($newTags) > 0 && $tagLengths[0] >= 8 ){
+					$params['photo_id'] = $photo['id'];
+					$photoTags = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)))["photo"]["tags"]['tag'];
+					foreach ($photoTags as $tag) {
+						if (strpos($tag['raw'], " ")){
+							$result[] = $tag['raw'];
+						}
+						$tags[] = $tag['_content'];
+					}
+				}
+			}
+			$result = array_unique($result);
+			$result = trim(implode("\n", $result));
 		}
-		$result = array_unique($result);
-		$result = trim(implode("\n", $result));
+		else{
+			$error .= 'photoset ID not recognized<br/>';
+		}
 	}
 	elseif (is_404($url) && $result == '') {
-		$error = '404 page not found';
+		$error .= '404 page not found';
 	}
 	else{
 		$readability = new Readability(new Configuration());
@@ -82,7 +111,7 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		$result = html_entity_decode($result);
 		// $result = mb_convert_encoding( $result, 'UTF-8');
 
-		preg_match_all("/[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+(-[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+)?( [A-Z]\.?)?( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+))?[ -]((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?(O')?[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+))?/", $result, $matches);
+		preg_match_all("/[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûßîãñõA-Z]+(-[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëößüïàèòùìâêôûîãñõA-Z]+)?( [A-Z]\.?)?([ \-]([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+))?( (van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó))? (O')?[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëßöüïàèòùìâêôûîãñõA-Z]+([ \-]([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòßùìâêôûîãñõA-Z]+))?/", $result, $matches);
 		
 		if ($matches){
 			$names = $matches[0];
