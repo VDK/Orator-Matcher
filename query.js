@@ -52,10 +52,13 @@ $.parallel($('#names').children('li'), function(listItem) {
       var outerText = document.createTextNode("Search for ");
       link.appendChild(outerText);
       link.appendChild(a);
-      outerText = document.createTextNode(" on Commons minus categorized images");
+      outerText = document.createTextNode(" on Commons");
+      if (categories != ''){
+        outerText.textContent += ", minus categorized images";
+      }
       link.appendChild(outerText);
-
-      listItem.children[0].prepend(link);
+      link.setAttribute('class', 'commonslink');
+      listItem.children[0].before(link);
     }
   });
 
@@ -75,9 +78,13 @@ $(function(){
       $('.isSportsPerson').each(function(){
         if (this.getAttribute('weight') == this.parentElement.parentElement.getAttribute('weight')){
           var weights = new Array();
+          var count = 0;
           for (var i = this.parentElement.children.length - 1; i >= 0; i--) {
             if(this.parentElement.children[i].getAttribute('class').indexOf("isSportsPerson") == '-1'){
               weights.push(parseInt(this.parentElement.children[i].getAttribute('weight')));
+            }
+            else{
+              count++;
             }
           }
           if(weights.length == 0){
@@ -87,7 +94,11 @@ $(function(){
             weights.sort().reverse();
             this.parentElement.parentElement.setAttribute('weight', weights[0]);
           }
+          if (this.parentElement.children.length == count){
+            this.parentElement.parentElement.children[0].style.display = "none";
+          }
         }
+
       });
     }
     else{
@@ -95,6 +106,7 @@ $(function(){
         if (parseInt(this.getAttribute('weight')) > parseInt(this.parentElement.parentElement.getAttribute('weight'))){
           this.parentElement.parentElement.setAttribute('weight', this.getAttribute('weight'));
         }
+        this.parentElement.parentElement.children[0].style.display = "block";
       });
     }
     $('.isSportsPerson').toggle();

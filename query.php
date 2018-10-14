@@ -98,7 +98,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			$results[] = $result;
 		}
 	}
-	if (isset($results)){
+	if (isset($results) && count($results) > 0){
 		echo json_encode($results);
 	}
 	else{
