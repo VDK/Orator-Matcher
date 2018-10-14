@@ -26,16 +26,40 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
 		if (isset($response['photoset'])){
 			$result = array();
+			$tags   = array();
 			$result[] = $response['photoset']['title']['_content'];
 			$result[] = $response['photoset']['description']['_content'];
 
 			$params['method'] = 'flickr.photosets.getPhotos';
 			$params['extras'] = 'description';
 
+
 			$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+
+			//set up params for raw tag request
+			$params['method'] = 'flickr.tags.getListPhoto';
+			unset($params['extras']);
+			unset($params['photoset_id']);
+
 			foreach ($response['photoset']['photo'] as $key => $value) {
 				$result[] = $value['title'];
 				$result[] = $value['description']['_content'];
+				$newTags  = explode(" ", $photo['tags']); 
+				$newTags  = array_diff($newTags, $tags);
+				$tagLengths = array();
+				foreach ($newTags as $tag) {
+					$tagLengths[] = strlen($tag);
+				}
+				if (count($newTags) > 0 && max($tagLengths) >= 8 ){
+					$params['photo_id'] = $photo['id'];
+					$photoTags = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)))["photo"]["tags"]['tag'];
+					foreach ($photoTags as $tag) {
+						if (strpos($tag['raw'], " ")){
+							$result[] = $tag['raw'];
+						}
+						$tags[] = $tag['_content'];
+					}
+				}
 			}
 			$result = array_unique($result);
 			$result = trim(implode("\n", $result));
