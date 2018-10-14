@@ -1,6 +1,6 @@
 <?php
-
-$query = file_get_contents('https://www.wikidata.org/w/api.php?action=query&list=search&utf10=true&format=json&srlimit=6&srsearch='.urlencode("'".$_GET['srsearch']."'"));
+$srsearch = trim($_GET['srsearch']);
+$query = file_get_contents('https://www.wikidata.org/w/api.php?action=query&list=search&utf10=true&format=json&srlimit=6&srsearch='.urlencode("'".$srsearch."'"));
 $query = json_decode($query, true);
 $query = $query['query'];
 
@@ -21,21 +21,24 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			  OPTIONAL { ?item wdt:P570 ?dateOfDeath. }
 			  OPTIONAL { ?item wdt:P106 ?occupation .}
 			  OPTIONAL { ?item wdt:P27  ?country .}
-			  OPTIONAL { ?link schema:about ?item; schema:isPartOf <https://commons.wikimedia.org/>; schema:name ?cattitle .
-			    SERVICE wikibase:mwapi {
+			  OPTIONAL { ?link schema:about ?item; schema:isPartOf <https://commons.wikimedia.org/>; schema:name ?cattitle1 . }
+              OPTIONAL { ?item wdt:P373 ?_cattitle2 																		
+                       BIND(CONCAT(\"Category:\", ?_cattitle2) as ?cattitle2)}
+              BIND(COALESCE( ?cattitle2, ?cattitle1) as ?cattitle)
+              OPTIONAL{
+                 SERVICE wikibase:mwapi {
 					bd:serviceParam wikibase:api \"Generator\" .
 			    	bd:serviceParam wikibase:endpoint \"commons.wikimedia.org\" .
 			    	bd:serviceParam mwapi:gcmtitle ?cattitle .
 			    	bd:serviceParam mwapi:generator \"categorymembers\" .
-			    	bd:serviceParam mwapi:gcmprop \"title\" .
 			    	bd:serviceParam mwapi:gcmlimit \"max\" .
 			    	bd:serviceParam mwapi:gcmtype \"subcat\" .
 					# out
 					?subcat wikibase:apiOutput mwapi:title  .
 					?ns wikibase:apiOutput \"@ns\" .
 					?witem wikibase:apiOutputItem mwapi:item .
-			 	}
-			  }
+                 }
+              }
 			  OPTIONAL {
 			    ?item wdt:P31 wd:Q5.
 			    { ?item wdt:P641 ?sport. } UNION
@@ -66,7 +69,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 				$occupations[] = $item['occupationLabel']['value'];
 			}
 			if(isset($item['subcat'])){
-				$categories[] = substr( $item['subcat']['value'], 9);
+				$categories[] = str_replace("Category:", " ", $item['subcat']['value']);
 			}
 		}
 		$occupations = array_unique($occupations);
@@ -75,6 +78,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			$result = array();
 			$item = $data['results']['bindings'][0];
 			$result['qitem'] = $value['title'];
+			$result['srsearch'] = $srsearch;
 			$result['itemLabel'] = $item['itemLabel']['value'];
 			$result['sitelinks'] = $item['sitelinks']['value'];
 			$result['isSportsPerson'] = $item['isSportsPerson']['value'];
@@ -85,13 +89,13 @@ if ($query['searchinfo']['totalhits'] >= 1){
 				$result['dateOfDeath'] = $item['dateOfDeath']['value'];
 			}
 			if (isset($item['occupationLabel'])){
-				$result['occupation'] = implode("/", $occupations);
+				$result['occupation'] = implode("/&shy;", $occupations);
 			}
 			if (isset($item['countryLabel'])){
 				$result['country'] = $item['countryLabel']['value'];
 			}
 			if (isset($item['cattitle'])){
-				$categories[] = substr($item['cattitle']['value'], 9);
+				$categories[] = str_replace("Category:", " ", $item['cattitle']['value');
 				$result['categories'] = "-incategory:\"".implode("\" -incategory:\"", $categories)."\"";
 			}
 

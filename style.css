@@ -12,7 +12,13 @@ a {
 	color: #2A679F;
 }
 /*========*/
-
+.hidden{
+	display: none;
+}
+a.cirussearch{
+	float:right;
+	padding-right:20px;
+}
 .form-wrapper {
 	background-color: #f6f6f6;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#f6f6f6), to(#eae8e8));
@@ -158,8 +164,8 @@ margin: 0;
  }
 ul.response > li{
 	padding-left:110px;
-	height: 55px;
-	padding-top:45px;
+	min-height: 100px;
+	padding-top:5px;
 	background:url('placeholder.png') no-repeat left top;
 }
 .word:hover{
