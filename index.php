@@ -14,10 +14,9 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		$url = 'https://'.$url;
 	}
 	if (!filter_var($url, FILTER_VALIDATE_URL)){
-		$error = 'That doesn\'t look like a url';
+		$error .=  'That doesn\'t look like a url';
 	}
 	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/albums\/(\d+)/", $url, $matches )){
-		$result = array();
 		$params = array(
 			'api_key'		=> $flickrAPIkey,
 			'method'		=> 'flickr.photosets.getInfo',
@@ -25,24 +24,28 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			'format'		=> 'php_serial',
 		);
 		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+		if (isset($response['photoset'])){
+			$result = array();
+			$result[] = $response['photoset']['title']['_content'];
+			$result[] = $response['photoset']['description']['_content'];
 
-		$result[] = $response['photoset']['title']['_content'];
-		$result[] = $response['photoset']['description']['_content'];
+			$params['method'] = 'flickr.photosets.getPhotos';
+			$params['extras'] = 'description';
 
-		$params['method'] = 'flickr.photosets.getPhotos';
-		$params['extras'] = 'description';
-
-		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
-		
-		foreach ($response['photoset']['photo'] as $key => $value) {
-			$result[] = $value['title'];
-			$result[] = $value['description']['_content'];
+			$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
+			foreach ($response['photoset']['photo'] as $key => $value) {
+				$result[] = $value['title'];
+				$result[] = $value['description']['_content'];
+			}
+			$result = array_unique($result);
+			$result = trim(implode("\n", $result));
 		}
-		$result = array_unique($result);
-		$result = trim(implode("\n", $result));
+		else{
+			$error .=  'Photoset ID not recognized<br/>';
+		}
 	}
-	elseif (is_404($url) && $result == '') {
-		$error = '404 page not found';
+	elseif (is_404($url)) {
+		$error .=  '404 page not found<br/>';
 	}
 	else{
 		$readability = new Readability(new Configuration());
@@ -99,6 +102,9 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 
 	
 	}
+	else{
+		$error .=  'no content found<br/>';
+	}
 }
 elseif (isset($_POST['names']) && $_POST['names'] != ''){
 	$names = $_POST['names'];
@@ -110,12 +116,12 @@ elseif (isset($_POST['names']) && $_POST['names'] != ''){
 	    unset($names[$key]);
 	}
 	$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
-	$query = preg_replace('/\%5B\d+\%5D/', '[]', $query);
+	$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
 	$query = str_replace('%0D', '', $query);
 	header( "Location: sparql.php?".$query."" );
 }
 elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
- $error = 'no input?';
+ $error .=  'no input?';
 }
 
 function is_404($url) {
