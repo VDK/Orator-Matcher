@@ -95,7 +95,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 				$result['country'] = $item['countryLabel']['value'];
 			}
 			if (isset($item['cattitle'])){
-				$categories[] = str_replace("Category:", " ", $item['cattitle']['value');
+				$categories[] = str_replace("Category:", " ", $item['cattitle']['value']);
 				$result['categories'] = "-incategory:\"".implode("\" -incategory:\"", $categories)."\"";
 			}
 
