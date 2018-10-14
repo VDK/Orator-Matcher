@@ -6,7 +6,7 @@ use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
 $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY");
-$error = '';
+$error 	=  '';
 $result = '';
 if (isset($_POST['url']) && $_POST['url'] != '' ){
 	$url = trim($_POST['url']);

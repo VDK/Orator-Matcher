@@ -7,7 +7,11 @@ $query = $query['query'];
 if ($query['searchinfo']['totalhits'] >= 1){
 	$results = array();
 	foreach ($query['search'] as $key => $value) {
-		$query = "SELECT ?itemLabel ?image ?dateOfDeath ?occupationLabel ?countryLabel ?sitelinks ?isSportsPerson WHERE {
+		$query = "
+		PREFIX gas: <http://www.bigdata.com/rdf/gas#>
+		prefix mediawiki: <https://www.mediawiki.org/ontology#> 
+
+		SELECT ?itemLabel ?image ?dateOfDeath ?occupationLabel ?countryLabel ?sitelinks ?isSportsPerson ?cattitle ?subcat WHERE {
 		  {
 			  {
 			    BIND(wd:".$value['title']." AS ?item).
@@ -17,6 +21,21 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			  OPTIONAL { ?item wdt:P570 ?dateOfDeath. }
 			  OPTIONAL { ?item wdt:P106 ?occupation .}
 			  OPTIONAL { ?item wdt:P27  ?country .}
+			  OPTIONAL { ?link schema:about ?item; schema:isPartOf <https://commons.wikimedia.org/>; schema:name ?cattitle .
+			    SERVICE wikibase:mwapi {
+					bd:serviceParam wikibase:api \"Generator\" .
+			    	bd:serviceParam wikibase:endpoint \"commons.wikimedia.org\" .
+			    	bd:serviceParam mwapi:gcmtitle ?cattitle .
+			    	bd:serviceParam mwapi:generator \"categorymembers\" .
+			    	bd:serviceParam mwapi:gcmprop \"title\" .
+			    	bd:serviceParam mwapi:gcmlimit \"max\" .
+			    	bd:serviceParam mwapi:gcmtype \"subcat\" .
+					# out
+					?subcat wikibase:apiOutput mwapi:title  .
+					?ns wikibase:apiOutput \"@ns\" .
+					?witem wikibase:apiOutputItem mwapi:item .
+			 	}
+			  }
 			  OPTIONAL {
 			    ?item wdt:P31 wd:Q5.
 			    { ?item wdt:P641 ?sport. } UNION
@@ -24,7 +43,8 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			    { ?item wdt:P106/wdt:P279* wd:Q2066131. }
 			    BIND(true AS ?isSportsPerson_)
 			  }
-			  BIND(COALESCE(?isSportsPerson_, false) AS ?isSportsPerson)
+			  BIND(COALESCE(?isSportsPerson_, false) AS ?isSportsPerson).
+			  
 			  ?item wikibase:sitelinks ?sitelinks 
 
 			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en,de\". }            
@@ -40,12 +60,17 @@ if ($query['searchinfo']['totalhits'] >= 1){
 		}			
 		$data = json_decode( $json, true );
 		$occupations = array();
+		$categories  = array();
 		foreach ($data['results']['bindings'] as $key => $item) {
 			if(isset($item['occupationLabel'])){
 				$occupations[] = $item['occupationLabel']['value'];
 			}
+			if(isset($item['subcat'])){
+				$categories[] = substr( $item['subcat']['value'], 9);
+			}
 		}
 		$occupations = array_unique($occupations);
+		$categories = array_unique($categories);
 		if (isset($data['results']['bindings'][0]) ) {
 			$result = array();
 			$item = $data['results']['bindings'][0];
@@ -64,6 +89,10 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			}
 			if (isset($item['countryLabel'])){
 				$result['country'] = $item['countryLabel']['value'];
+			}
+			if (isset($item['cattitle'])){
+				$categories[] = substr($item['cattitle']['value'], 9);
+				$result['categories'] = "-incategory:\"".implode("\" -incategory:\"", $categories)."\"";
 			}
 
 			$results[] = $result;
