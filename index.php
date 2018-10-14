@@ -36,7 +36,6 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			$params['extras'] = 'description, tags';
 	
 			$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
-
 			
 			$params['method'] = 'flickr.tags.getListPhoto';
 			unset($params['extras']);
@@ -51,8 +50,7 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 				foreach ($newTags as $tag) {
 					$tagLengths[] = strlen($tag);
 				}
-				rsort($tagLengths);
-				if (count($newTags) > 0 && $tagLengths[0] >= 8 ){
+				if (count($newTags) > 0 && max($tagLengths) >= 8 ){
 					$params['photo_id'] = $photo['id'];
 					$photoTags = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)))["photo"]["tags"]['tag'];
 					foreach ($photoTags as $tag) {
