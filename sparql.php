@@ -13,6 +13,7 @@
 <script type="text/javascript" src="query.js"></script>
 <title>Orator Matcher</title>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=0.41, maximum-scale=1" />
 </head>
 <body>
 <form class="form-wrapper"  id="form"	>

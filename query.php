@@ -8,9 +8,6 @@ if ($query['searchinfo']['totalhits'] >= 1){
 	$results = array();
 	foreach ($query['search'] as $key => $value) {
 		$query = "
-		PREFIX gas: <http://www.bigdata.com/rdf/gas#>
-		prefix mediawiki: <https://www.mediawiki.org/ontology#> 
-
 		SELECT ?itemLabel ?image ?dateOfDeath ?occupationLabel ?countryLabel ?sitelinks ?isSportsPerson ?cattitle ?subcat WHERE {
 		  {
 			  {
@@ -52,7 +49,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 
 			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en,de\". }            
 			}.filter(NOT EXISTS { ?item wdt:P570  [] } 
-                  || ?dateOfDeath >= \"".(date("Y")-2)."-01-01T00:00:00Z\"^^xsd:dateTime )
+                  || ?dateOfDeath >= \"".(date("Y")-5)."-01-01T00:00:00Z\"^^xsd:dateTime )
 		}";
 
 		$url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?' . http_build_query(
@@ -69,7 +66,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 				$occupations[] = $item['occupationLabel']['value'];
 			}
 			if(isset($item['subcat'])){
-				$categories[] = str_replace("Category:", " ", $item['subcat']['value']);
+				$categories[] = str_replace("Category:", "", $item['subcat']['value']);
 			}
 		}
 		$occupations = array_unique($occupations);
@@ -78,7 +75,6 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			$result = array();
 			$item = $data['results']['bindings'][0];
 			$result['qitem'] = $value['title'];
-			$result['srsearch'] = $srsearch;
 			$result['itemLabel'] = $item['itemLabel']['value'];
 			$result['sitelinks'] = $item['sitelinks']['value'];
 			$result['isSportsPerson'] = $item['isSportsPerson']['value'];
@@ -95,7 +91,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 				$result['country'] = $item['countryLabel']['value'];
 			}
 			if (isset($item['cattitle'])){
-				$categories[] = str_replace("Category:", " ", $item['cattitle']['value']);
+				$categories[] = str_replace("Category:", "", $item['cattitle']['value']);
 				$result['categories'] = "-incategory:\"".implode("\" -incategory:\"", $categories)."\"";
 			}
 
