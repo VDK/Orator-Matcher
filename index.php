@@ -31,7 +31,7 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			$result[] = $response['photoset']['description']['_content'];
 
 			$params['method'] = 'flickr.photosets.getPhotos';
-			$params['extras'] = 'description';
+			$params['extras'] = 'description, tags';
 
 
 			$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
@@ -41,9 +41,9 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			unset($params['extras']);
 			unset($params['photoset_id']);
 
-			foreach ($response['photoset']['photo'] as $key => $value) {
-				$result[] = $value['title'];
-				$result[] = $value['description']['_content'];
+			foreach ($response['photoset']['photo'] as $photo) {
+				$result[] = $photo['title'];
+				$result[] = $photo['description']['_content'];
 				$newTags  = explode(" ", $photo['tags']); 
 				$newTags  = array_diff($newTags, $tags);
 				$tagLengths = array();
