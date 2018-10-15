@@ -8,13 +8,14 @@ if ($query['searchinfo']['totalhits'] >= 1){
 	$results = array();
 	foreach ($query['search'] as $key => $value) {
 		$query = "
-		SELECT ?itemLabel ?image ?dateOfDeath ?occupationLabel ?countryLabel ?sitelinks ?isSportsPerson ?cattitle ?subcat WHERE {
+		SELECT ?itemLabel ?image ?dateOfBirth ?dateOfDeath  ?occupationLabel ?countryLabel ?sitelinks ?isSportsPerson ?cattitle ?subcat WHERE {
 		  {
 			  {
 			    BIND(wd:".$value['title']." AS ?item).
 	     		?item wdt:P31 wd:Q5
 			  }
 			  OPTIONAL { ?item wdt:P18  ?image. }
+			  OPTIONAL { ?item wdt:P569 ?dateOfBirth.}
 			  OPTIONAL { ?item wdt:P570 ?dateOfDeath. }
 			  OPTIONAL { ?item wdt:P106 ?occupation .}
 			  OPTIONAL { ?item wdt:P27  ?country .}
@@ -50,6 +51,8 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en,de\". }            
 			}.filter(NOT EXISTS { ?item wdt:P570  [] } 
                   || ?dateOfDeath >= \"".(date("Y")-5)."-01-01T00:00:00Z\"^^xsd:dateTime )
+		 	 .filter(NOT EXISTS { ?item wdt:P569  [] } 
+                  || ?dateOfBirth >="1910-01-01T00:00:00Z"^^xsd:dateTime )
 		}";
 
 		$url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?' . http_build_query(
