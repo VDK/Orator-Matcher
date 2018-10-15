@@ -5,7 +5,7 @@ include_once('variables.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
 $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
-$blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY");
+$blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE");
 $error 	=  '';
 $result = '';
 if (isset($_POST['url']) && $_POST['url'] != '' ){
@@ -113,18 +113,21 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 		
 		if ($matches){
 			$names = $matches[0];
-			$names = array_unique($names);
 			
 			foreach ($names as $key => $name) {
+				$name = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)? (.+)/", "$3", $name);
+				$name = preg_replace("/^((Prof|Dr|Professor|Doctor)\.?)? (.+)/", "$3", $name);
+				$names[$key] = $name;
 				foreach ($blacklist as $item) {
 					if(strpos(strtoupper($name), $item)){
 						unset($names[$key]);
 					}
 				}
 			}
+			$names = array_unique($names);
+			sort($names);
 		}
 
-	
 	}
 	else{
 		$error .=  'no content found<br/>';
