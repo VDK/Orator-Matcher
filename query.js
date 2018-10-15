@@ -9,46 +9,51 @@ $.parallel($('#names').children('li'), function(listItem) {
       var categories = '';
       for (var i = 0; i <= data.length - 1; i++) {
         var item= data[i];
-    
-        var innerDiv = document.createElement('li');
-        innerDiv.className = 'block-2';
-        innerDiv.innerHTML ="<b>"+item['sitelinks']+"</b>:<a href='https://wikidata.org/wiki/"+item['qitem']+"' target='_blank'>"+item['itemLabel']+"</a>";
+        var responseList = $(listItem).find('.response')[0];
+        var response = document.createElement('li');
+        response.className = 'block-2';
+        response.innerHTML ="<b>"+item['sitelinks']+"</b>:<a href='https://wikidata.org/wiki/"+item['qitem']+"' target='_blank'>"+item['itemLabel']+"</a>";
+        if(item['dateOfBirth']){
+          var d = new Date(item['dateOfBirth']);
+          response.innerHTML += "("+ d.getFullYear() +")";
+        }
         if(item['occupation']){
-         innerDiv.innerHTML += ", "+ item['occupation'] ;
+         response.innerHTML += ", "+ item['occupation'] ;
         }
         if(item['country']){
-         innerDiv.innerHTML += " from "+ item['country'] ;
+         response.innerHTML += " from "+ item['country'] ;
         }
         if (item['image']){
-          innerDiv.setAttribute('style', "background:url('"+item['image']+"') no-repeat left top;");
+          response.setAttribute('style', "background:url('"+item['image']+"') no-repeat left top;");
         }
         if (item['isSportsPerson'] == 'true'){
-          innerDiv.className += ' isSportsPerson';
+          response.className += ' isSportsPerson';
           if($('#sportsPersonCheck')[0].checked == false){
-            innerDiv.style.display = "none";
+            response.style.display = "none";
           }
         }
         if (item['categories']){
            categories += " "+item['categories'];
 
         }
-        innerDiv.setAttribute('weight', item['sitelinks']);
-        listItem.children[0].append(innerDiv);
-        tinysort(listItem.children[0].children, {attr:'weight'});  
+        response.setAttribute('weight', item['sitelinks']);
+        responseList.append(response);
+        tinysort(responseList.children, {attr:'weight'});  
         if (item['sitelinks'] > listItem.getAttribute('weight') && ((item['isSportsPerson'] == 'true' &&  $('#sportsPersonCheck')[0].checked == true)  || item['isSportsPerson'] == 'false') ){
           listItem.setAttribute('weight', item['sitelinks']);
           tinysort('ul#names>li', {attr:'weight'});  
         }
       }
-
+      //link to search Commons
       var a = document.createElement('a');
       var innserText = document.createTextNode("\""+srsearch.trim()+"\"");
       a.appendChild(innserText);
-      a.title = "commons search for "+srsearch;
-      a.href = "https://commons.wikimedia.org/w/index.php?search="+encodeURI("\""+srsearch+"\" "+categories);
+      a.title  = "commons search for "+srsearch;
+      a.href   = "https://commons.wikimedia.org/w/index.php?search="+encodeURI("\""+srsearch+"\" "+categories);
       a.target = '_blank';
 
       var link = document.createElement('span');
+      link.setAttribute('class', 'commonslink');
       var outerText = document.createTextNode("Search for ");
       link.appendChild(outerText);
       link.appendChild(a);
@@ -57,8 +62,7 @@ $.parallel($('#names').children('li'), function(listItem) {
         outerText.textContent += ", minus categorized images";
       }
       link.appendChild(outerText);
-      link.setAttribute('class', 'commonslink');
-      listItem.children[0].before(link);
+      responseList.before(link);
     }
   });
 
@@ -95,7 +99,7 @@ $(function(){
             this.parentElement.parentElement.setAttribute('weight', weights[0]);
           }
           if (this.parentElement.children.length == count){
-            this.parentElement.parentElement.children[0].style.display = "none";
+            $(this).parent().parent().find('.commonslink')[0].style.display = "none";
           }
         }
 
@@ -106,7 +110,7 @@ $(function(){
         if (parseInt(this.getAttribute('weight')) > parseInt(this.parentElement.parentElement.getAttribute('weight'))){
           this.parentElement.parentElement.setAttribute('weight', this.getAttribute('weight'));
         }
-        this.parentElement.parentElement.children[0].style.display = "block";
+        $(this).parent().parent().find('.commonslink')[0].style.display = "block";
       });
     }
     $('.isSportsPerson').toggle();

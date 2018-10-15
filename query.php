@@ -52,7 +52,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			}.filter(NOT EXISTS { ?item wdt:P570  [] } 
                   || ?dateOfDeath >= \"".(date("Y")-5)."-01-01T00:00:00Z\"^^xsd:dateTime )
 		 	 .filter(NOT EXISTS { ?item wdt:P569  [] } 
-                  || ?dateOfBirth >="1910-01-01T00:00:00Z"^^xsd:dateTime )
+                  || ?dateOfBirth >=\"1910-01-01T00:00:00Z\"^^xsd:dateTime )
 		}";
 
 		$url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?' . http_build_query(
@@ -83,6 +83,9 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			$result['isSportsPerson'] = $item['isSportsPerson']['value'];
 			if (isset($item['image'])){
 				$result['image'] = $item['image']['value']."?width=100";
+			}
+			if (isset($item['dateOfBirth'])){
+				$result['dateOfBirth'] = $item['dateOfBirth']['value'];
 			}
 			if (isset($item['dateOfDeath'])){
 				$result['dateOfDeath'] = $item['dateOfDeath']['value'];
