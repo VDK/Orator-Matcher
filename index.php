@@ -170,28 +170,62 @@ function is_404($url) {
     }
 }
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>Orator Matcher</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <link rel="stylesheet" href="css/style.css">
+
+ <!--  Favicon
+  ––––––––––––––––––––––––––––––––––––––––––––––––––
+  <link rel="icon" type="image/png" href="images/favicon.png"> -->
+ 
+ <!-- Javascripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-<link rel="stylesheet" href="style.css">
 <script type="text/javascript" src="script.js"></script>
-<title>Orator Matcher</title>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<meta charset="UTF-8">
 </head>
 <body>
-	<form class="form-wrapper"  method="POST"  target='_self' id="form"	>
-	<div style='color:red; clear:both;'><?php echo $error; ?></div>
-   <div> <input type="text" id="url" placeholder="URL to the list of conference speakers" name='url' >
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container">
+    <div class="row">
+      <div class="u-full-width" style="margin-top: 5%">
+        <form class="form-wrapper"  method="POST"  target='_self' id="form"	>
+			<div style='color:red; clear:both;'><?php echo $error; ?></div>
+		   <div> <input type="text" id="url" placeholder="URL to the list of conference speakers" name='url' >
 
 
-<div id='showTex' style='clear:both; '>OR a list of names:</div>
-<textarea rows='10'  cols='50' name='names' form='form' class='<?php echo (isset($names)? 'retracted' :'expand'); ?>'></textarea>
+		<div id='showTex' style='clear:both; '>OR a list of names:</div>
+		<textarea rows='10'  cols='50' name='names' form='form' class='<?php echo (isset($names)? 'retracted' :'expand'); ?>'></textarea>
 
 
-    <input type="submit" class='button' value="go" id="submit"></div> 	
-</form>
-<div>
+		    <input type="submit" class='button' value="go" id="submit"></div> 	
+		</form>
+		<div>
 
 <?php
 if (isset($names)){
@@ -209,6 +243,14 @@ if (isset($names)){
 ?>
 
 </div>
+      </div>
+    </div>
+  </div>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+
+	
 </body>
 
 </html>
