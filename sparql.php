@@ -43,9 +43,8 @@
 
   <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container">
+  <div class="container" style="margin-top: 10px">
     <div class="row">
-      <div class="u-full-width" style="margin-top: 5%">
 
 <form class="form-wrapper"  id="form"	>
 <a href="index.php">< back home</a>
@@ -69,7 +68,7 @@ else{ ?>
 		$name = trim($name);
 		$name = strip_tags($name);
 		if ($name != ''){
-			echo "<li class='name' weight='-1'>".$name."<ul class='response' ></ul></li>";
+			echo "<li class='name' weight='-1'>".urldecode($name)."<ul class='response' ></ul></li>";
 		}
 	}
 	echo "</ul>";
@@ -77,7 +76,6 @@ else{ ?>
 
 
 ?> 	 </div>
-    </div>
   </div>
 
 <!-- End Document

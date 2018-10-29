@@ -5,7 +5,8 @@ include_once('variables.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
 $tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
-$blacklist = array('UNIVERSITY', 'UNITED STATES', "UNIVERSITEIT", "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE");
+$preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", "Director", "University", "Universtiteit", "Assistant", "Executive", "President", "Senior", "Junior", "Research Fellow", "Royal");
+$postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
 $error 	=  '';
 $result = '';
 if (isset($_POST['url']) && $_POST['url'] != '' ){
@@ -105,26 +106,28 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 	if ($result != ''){
 
 		$result = str_replace($tags,"\n",$result);
+		foreach ($preBlack as $value) {
+			$result = preg_replace("/\b".$value."\b/m", "", $result);
+			# code...
+		}
 		$result = strip_tags($result);
 		$result = html_entity_decode($result);
 		// $result = mb_convert_encoding( $result, 'UTF-8');
 
-		preg_match_all("/[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+(-[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+)?( [A-Z]\.?)?( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+))?[ -]((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?(O')?[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕ][a-záéóúíäëöüïàèòùìâêôûîãñõA-Z]+))?/", $result, $matches);
+		preg_match_all("/[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýž'A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ\-]+( ([A-Z]\.?)+)?( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ]+))? ((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-z'áéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ\-]+( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-Z]+))?/", $result, $matches);
 		
 		if ($matches){
 			$names = $matches[0];
 			
 			foreach ($names as $key => $name) {
-				$name = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)? (.+)/", "$3", $name);
-				$name = preg_replace("/^((Prof|Dr|Professor|Doctor)\.?)? (.+)/", "$3", $name);
-				$names[$key] = $name;
-				foreach ($blacklist as $item) {
-					if(strpos(strtoupper($name), $item)){
+				$names[$key] = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)?( ?(Prof|Dr|Mr|Ms)\.?)? (.+)/", "$5", $name);
+				foreach ($postBlacklist as $item) {
+					if(preg_match("/\b".$item."\b/", strtoupper($name))){
 						unset($names[$key]);
 					}
 				}
 			}
-			$names = array_unique($names);
+			$names = array_iunique($names);
 			sort($names);
 		}
 
@@ -169,6 +172,13 @@ function is_404($url) {
         return true;
     }
 }
+//non-case-sensitive array_unique
+function array_iunique($array) {
+    return array_intersect_key(
+        $array,
+        array_unique(array_map("StrToLower",$array))
+    );
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -211,9 +221,8 @@ function is_404($url) {
 
   <!-- Primary Page Layout
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-  <div class="container">
+  <div class="container" style="margin-top: 10">
     <div class="row">
-      <div class="u-full-width" style="margin-top: 5%">
         <form class="form-wrapper"  method="POST"  target='_self' id="form"	>
 			<div style='color:red; clear:both;'><?php echo $error; ?></div>
 		   <div> <input type="text" id="url" placeholder="URL to the list of conference speakers" name='url' >
@@ -233,7 +242,7 @@ if (isset($names)){
 	echo "<ul id='names'>";
 	foreach ($names as $key => $value) {
 
-		echo "<li><span class='remove button'>x</span><span class='word'>".str_replace(" ", "</span> <span class='word'>", $value)."</span><input name='name[]' type='hidden' class='hiddenNames' value='".$value."'</li>";
+		echo "<li><span class='remove button'>x</span><span class='word'>".str_replace(" ", "</span> <span class='word'>", $value)."</span><input name='name[]' type='hidden' class='hiddenNames' value='".urlencode($value)."'</li>";
 	}
 	echo "</ul>";
 	echo "<input type='submit' class='button' id='go' value='go'/>";	
@@ -244,7 +253,6 @@ if (isset($names)){
 
 </div>
       </div>
-    </div>
   </div>
 
 <!-- End Document
