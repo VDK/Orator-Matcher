@@ -9,7 +9,22 @@ $preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", 
 $postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
 $error 	=  '';
 $result = '';
-if (isset($_POST['url']) && $_POST['url'] != '' ){
+if (isset($_POST['names']) && $_POST['names'] != ''){
+	$names = $_POST['names'];
+	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
+	$result = $names;
+	
+	if($_POST['analyse'] != 'on'){
+		$names = explode("\n", $names);
+		$names = array_unique($names);
+	    unset($names[$key]);
+		$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
+		$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
+		$query = str_replace('%0D', '', $query);
+		header( "Location: sparql.php?".$query."" );
+	}
+}
+elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 	$url = trim($_POST['url']);
 	if (!filter_var($url, FILTER_VALIDATE_URL)){
 		$url = 'https://'.$url;
@@ -17,7 +32,7 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 	if (!filter_var($url, FILTER_VALIDATE_URL)){
 		$error .=  'That doesn\'t look like a url';
 	}
-	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/albums\/(\d+)/", $url, $matches )){
+	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/(albums|sets)\/(\d+)/", $url, $matches )){
 		$params = array(
 			'api_key'		=> $flickrAPIkey,
 			'method'		=> 'flickr.photosets.getInfo',
@@ -103,54 +118,40 @@ if (isset($_POST['url']) && $_POST['url'] != '' ){
 			$result = $html;
 		}
 	}
-	if ($result != ''){
+}
+if ($result != ''){
+	$result = str_replace($tags,"\n",$result);
+	foreach ($preBlack as $value) {
+		$result = preg_replace("/\b".$value."\b/m", "", $result);
+		# code...
+	}
+	$result = strip_tags($result);
+	$result = html_entity_decode($result);
+	// $result = mb_convert_encoding( $result, 'UTF-8');
 
-		$result = str_replace($tags,"\n",$result);
-		foreach ($preBlack as $value) {
-			$result = preg_replace("/\b".$value."\b/m", "", $result);
-			# code...
-		}
-		$result = strip_tags($result);
-		$result = html_entity_decode($result);
-		// $result = mb_convert_encoding( $result, 'UTF-8');
-
-		preg_match_all("/[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýž'A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ\-]+( ([A-Z]\.?)+)?( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ]+))? ((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?[A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-z'áéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ\-]+( ([A-ZÁÉÓÚÍÄËÖÜÏÀÈÒÙÌÂÊÔÛÎÃÑÕÆÅĂĄĆČÇĚĞIŁŃØŘŚŞȘŠȚŮÝŽ][a-záéóúíäëöüïàèòùìâêôûîãñõæåăąćčçěğıłńøřśşșšțůýžA-Z]+))?/", $result, $matches);
+	preg_match_all("/[\p{Lu}][\p{L}'\-]*[\p{L}](( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*) ((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'\-]*[\p{L}])+/u", $result, $matches);
+	
+	if ($matches){
+		$names = $matches[0];
 		
-		if ($matches){
-			$names = $matches[0];
-			
-			foreach ($names as $key => $name) {
-				$names[$key] = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)?( ?(Prof|Dr|Mr|Ms)\.?)? (.+)/", "$5", $name);
-				foreach ($postBlacklist as $item) {
-					if(preg_match("/\b".$item."\b/", strtoupper($name))){
-						unset($names[$key]);
-					}
+		foreach ($names as $key => $name) {
+			$names[$key] = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)?( ?(Prof|Dr|Mr|Ms)\.?)? (.+)/", "$5", $name);
+			foreach ($postBlacklist as $item) {
+				if(preg_match("/\b".$item."\b/", strtoupper($name))){
+					unset($names[$key]);
 				}
 			}
-			$names = array_iunique($names);
-			sort($names);
 		}
+		$names = array_iunique($names);
+		sort($names);
+	}
 
-	}
-	else{
-		$error .=  'no content found<br/>';
-	}
 }
-elseif (isset($_POST['names']) && $_POST['names'] != ''){
-	$names = $_POST['names'];
-	$names = preg_replace('/VM\d+:\d/', '', $names);
-	// $names = mb_convert_encoding($names, 'utf-8');
-	$names = explode("\n", $names);
-	$names = array_unique($names);
-	if (($key = array_search("", $names)) !== false) {
-	    unset($names[$key]);
-	}
-	$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
-	$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
-	$query = str_replace('%0D', '', $query);
-	header( "Location: sparql.php?".$query."" );
+else{
+	$error .=  'no content found<br/>';
 }
-elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
+
+if(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
  $error .=  'no input?';
 }
 
@@ -230,9 +231,13 @@ function array_iunique($array) {
 
 		<div id='showTex' style='clear:both; '>OR a list of names:</div>
 		<textarea rows='10'  cols='50' name='names' form='form' class='<?php echo (isset($names)? 'retracted' :'expand'); ?>'></textarea>
+		<label class="switch">
+		  <input name='analyse' type="checkbox">
+		  <span class="slider round"></span> Analyse 
+		</label>
 
-
-		    <input type="submit" class='button' value="go" id="submit"></div> 	
+		    <input type="submit" class='button' value="go" id="submit">
+		</div> 	
 		</form>
 		<div>
 
