@@ -10,19 +10,25 @@ $postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVE
 $error 	=  '';
 $result = '';
 if (isset($_POST['names']) && $_POST['names'] != ''){
-	$names = $_POST['names'];
+	$names = trim($_POST['names']);
 	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
 	$result = $names;
 	
-	if($_POST['analyse'] != 'on'){
+	
+	if(!isset($_POST['analyse']) ){
 		$names = explode("\n", $names);
 		$names = array_unique($names);
-	    unset($names[$key]);
-		$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
-		$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
-		$query = str_replace('%0D', '', $query);
-		header( "Location: sparql.php?".$query."" );
+		if (($key = array_search("", $names)) !== false) {
+    		unset($names[$key]);
+		}
+		if (count($names)){
+			$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
+			$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
+			$query = str_replace('%0D', '', $query);
+			header( "Location: sparql.php?".$query."" );
+		}
 	}
+	
 }
 elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 	$url = trim($_POST['url']);
@@ -123,7 +129,6 @@ if ($result != ''){
 	$result = str_replace($tags,"\n",$result);
 	foreach ($preBlack as $value) {
 		$result = preg_replace("/\b".$value."\b/m", "", $result);
-		# code...
 	}
 	$result = strip_tags($result);
 	$result = html_entity_decode($result);
@@ -141,17 +146,20 @@ if ($result != ''){
 					unset($names[$key]);
 				}
 			}
+			if (trim($name) == ''){
+				unset($names[$key]);
+			}
 		}
 		$names = array_iunique($names);
 		sort($names);
 	}
 
-}
-else{
-	$error .=  'no content found<br/>';
+	if(count($names) == 0){
+		$error .=  'no content found<br/>';
+	}
 }
 
-if(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
+elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
  $error .=  'no input?';
 }
 
@@ -242,7 +250,7 @@ function array_iunique($array) {
 		<div>
 
 <?php
-if (isset($names)){
+if (isset($names) && count($names)){
 	echo '<form class="form-wrapper" action="sparql.php" >';
 	echo "<ul id='names'>";
 	foreach ($names as $key => $value) {
