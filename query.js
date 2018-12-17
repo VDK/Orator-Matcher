@@ -25,6 +25,7 @@ $.parallel($('#names').children('li'), function(listItem) {
         }
         if (item['image']){
           response.setAttribute('style', "background:url('"+item['image']+"') no-repeat left top;");
+          listItem.setAttribute('image', true);
         }
         if (item['isSportsPerson'] == 'true'){
           response.className += ' isSportsPerson';

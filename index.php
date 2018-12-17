@@ -4,7 +4,7 @@ include_once('vendor/autoload.php');
 include_once('variables.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
-$tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
+$htmlTags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", "Director", "University", "Universtiteit", "Assistant", "Executive", "President", "Senior", "Junior", "Research Fellow", "Royal");
 $postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
 $error 	=  '';
@@ -14,12 +14,11 @@ if (isset($_POST['names']) && $_POST['names'] != ''){
 	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
 	$result = $names;
 	
-	
 	if(!isset($_POST['analyse']) ){
 		$names = explode("\n", $names);
-		$names = array_unique($names);
 		$names = array_filter($names);
 		if (count($names)){
+			$names = array_iunique($names);
 			$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
 			$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
 			$query = str_replace('%0D', '', $query);
@@ -124,7 +123,7 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 	}
 }
 if ($result != ''){
-	$result = str_replace($tags,"\n",$result);
+	$result = str_replace($htmlTags,"\n",$result);
 	foreach ($preBlack as $value) {
 		$result = preg_replace("/\b".$value."\b/m", "", $result);
 	}
