@@ -18,9 +18,7 @@ if (isset($_POST['names']) && $_POST['names'] != ''){
 	if(!isset($_POST['analyse']) ){
 		$names = explode("\n", $names);
 		$names = array_unique($names);
-		if (($key = array_search("", $names)) !== false) {
-    		unset($names[$key]);
-		}
+		$names = array_filter($names);
 		if (count($names)){
 			$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
 			$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
@@ -134,6 +132,8 @@ if ($result != ''){
 	$result = html_entity_decode($result);
 	// $result = mb_convert_encoding( $result, 'UTF-8');
 
+
+	# where the magic happens #
 	preg_match_all("/[\p{Lu}][\p{L}'\-]*[\p{L}](( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*) ((van|der?|van der?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'\-]*[\p{L}])+/u", $result, $matches);
 	
 	if ($matches){
@@ -146,11 +146,9 @@ if ($result != ''){
 					unset($names[$key]);
 				}
 			}
-			if (trim($name) == ''){
-				unset($names[$key]);
-			}
 		}
 		$names = array_iunique($names);
+		$names = array_filter($names);
 		sort($names);
 	}
 
