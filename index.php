@@ -4,7 +4,7 @@ include_once('vendor/autoload.php');
 include_once('variables.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
-$tags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
+$htmlTags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", "Director", "University", "Universtiteit", "Assistant", "Executive", "President", "Senior", "Junior", "Research Fellow", "Royal");
 $postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
 $error 	=  '';
@@ -63,12 +63,13 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 			foreach ($response['photoset']['photo'] as $photo) {
 				$result[] = $photo['title'];
 				$result[] = $photo['description']['_content'];
-				$newTags  = explode(" ", $photo['tags']); 
-				$newTags  = array_diff($newTags, $tags);
+				//determin if it's worth it to do an API request for this photo
+				$newTags  = array_diff(explode(" ", $photo['tags']), $tags);
 				$tagLengths = array();
 				foreach ($newTags as $tag) {
 					$tagLengths[] = strlen($tag);
 				}
+				//if there are new tags and the lenght of the new tag is longer than 8 characters (no #FYI)
 				if (count($newTags) > 0 && max($tagLengths) >= 8 ){
 					$params['photo_id'] = $photo['id'];
 					$photoTags = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)))["photo"]["tags"]['tag'];
@@ -123,10 +124,11 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 	}
 }
 if ($result != ''){
-	$result = str_replace($tags,"\n",$result);
+	$result = str_replace($htmlTags,"\n",$result);
 	foreach ($preBlack as $value) {
 		$result = preg_replace("/\b".$value."\b/m", "", $result);
 	}
+
 	$result = strip_tags($result);
 	$result = html_entity_decode($result);
 	// $result = mb_convert_encoding( $result, 'UTF-8');
