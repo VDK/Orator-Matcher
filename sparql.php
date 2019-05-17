@@ -49,8 +49,9 @@
 <form class="form-wrapper"  id="form"	>
 <a href="index.php">< back home</a>
   <div>
+
 <?php
-if (!isset($_GET['name']) || !is_array($_GET['name'])){
+if ((!isset($_GET['name']) || !is_array($_GET['name'])) && !isset($_GET['names'])){
 	echo "<p style='color:red'>bad input</p></div></form>";
 }
 else{ ?>
@@ -62,7 +63,16 @@ else{ ?>
 <div id='progressbar'></div>
 	<ul id='names'>
 	<?php
-	$names = $_GET['name'];
+  
+  $names =array();
+  //backwards compatibility variable name:  
+
+  if (isset($_GET['name'])){
+	 $names = array_merge($names, $_GET['name']);
+  }
+  if (isset($_GET['names'])){
+   $names = array_merge($names, explode("|", urldecode($_GET['names'])));
+  }
 	$names = array_unique($names);
 	foreach ($names as $key => $name) {
 		$name = trim($name);

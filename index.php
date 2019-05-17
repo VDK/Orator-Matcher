@@ -248,7 +248,7 @@ function array_iunique($array) {
 
 <?php
 if (isset($names) && count($names)){
-	echo '<form class="form-wrapper" action="sparql.php" >';
+	echo '<form class="form-wrapper" method="POST" action="posttoget.php" >';
 	echo "<ul id='names'>";
 	foreach ($names as $key => $value) {
 
