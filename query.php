@@ -55,13 +55,8 @@ if ($query['searchinfo']['totalhits'] >= 1){
                   || ?dateOfBirth >=\"1910-01-01T00:00:00Z\"^^xsd:dateTime )
 		}";
 
-		$url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql?' . http_build_query(
-    		[ 'query' => $query, 'format' => 'json' ], null, ini_get( 'arg_separator.output' ), PHP_QUERY_RFC3986 );
-		$json = file_get_contents( $url );
-		if ( $json === false ) { 
-			#throw ... 
-		}			
-		$data = json_decode( $json, true );
+			
+		$data = sparqlQuery ($query );
 		$occupations = array();
 		$categories  = array();
 		foreach ($data['results']['bindings'] as $key => $item) {
@@ -114,5 +109,24 @@ if ($query['searchinfo']['totalhits'] >= 1){
 else{
 	echo json_encode('nee');
 }
+function sparqlQuery(string $sparqlQuery): array
+    {
 
+        $opts = [
+            'http' => [
+                'method' => 'GET',
+                'header' => [
+                    "Accept: application/sparql-results+json\r\n".
+                    "Accept-language: en\r\n" .
+              		"Cookie: foo=bar\r\n" .  // check function.stream-context-create on php.net
+              		"User-Agent: Mozilla/5.0 (iPad; U; CPU OS 3_2 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Version/4.0.4 Mobile/7B334b Safari/531.21.102011-10-16 20:23:10\r\n"
+                ],
+            ],
+        ];
+        $context = stream_context_create($opts);
+
+        $url = 'https://query.wikidata.org/sparql?query=' . urlencode($sparqlQuery);
+        $response = file_get_contents($url, false, $context);
+        return json_decode($response, true);
+    }
 ?>
