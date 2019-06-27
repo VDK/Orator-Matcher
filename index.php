@@ -19,10 +19,10 @@ if (isset($_POST['names']) && $_POST['names'] != ''){
 		$names = array_filter($names);
 		if (count($names)){
 			$names = array_iunique($names);
-			$query = http_build_query(['name' => $names],null, ini_get( 'arg_separator.output' ));
-			$query = preg_replace('/\%5B\d+\%5D/', '[]', $query); //naughty way to get the url string to be shorter
-			$query = str_replace('%0D', '', $query);
-			header( "Location: sparql.php?".$query."" );
+			foreach ($names as $key => $name) {
+				$names[$key] = urlencode($name);
+			}
+			header('Location: sparql.php?names='.implode("|", $names));
 		}
 	}
 	
@@ -250,7 +250,7 @@ function array_iunique($array) {
 
 <?php
 if (isset($names) && count($names)){
-	echo '<form class="form-wrapper" action="sparql.php" >';
+	echo '<form class="form-wrapper" method="POST" action="posttoget.php" >';
 	echo "<ul id='names'>";
 	foreach ($names as $key => $value) {
 
