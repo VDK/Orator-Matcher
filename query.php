@@ -1,6 +1,6 @@
 <?php
 $srsearch = trim($_GET['srsearch']);
-$query = file_get_contents('https://www.wikidata.org/w/api.php?action=query&list=search&utf10=true&format=json&srlimit=6&srsearch='.urlencode("'".$srsearch."'"));
+$query = file_get_contents('https://www.wikidata.org/w/api.php?action=query&list=search&utf10=true&format=json&srlimit=15&srsearch=haswbstatement:"P31=Q5"%20'.urlencode("'".$srsearch."'"));
 $query = json_decode($query, true);
 $query = $query['query'];
 

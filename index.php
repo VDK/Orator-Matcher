@@ -135,7 +135,7 @@ if ($result != ''){
 
 
 	# where the magic happens #
-	preg_match_all("/[\p{Lu}][\p{L}'\-]*[\p{L}](( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*) ((van|de[rn]?|van de[rn]?|el|'t|tot|ter|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'\-]*[\p{L}])+/u", $result, $matches);
+	preg_match_all("/[\p{Lu}][\p{L}'\-]*[\p{L}](( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? 't|tot|te[rn]|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'\-]*[\p{L}])+/u", $result, $matches);
 	
 	if ($matches){
 		$names = $matches[0];
