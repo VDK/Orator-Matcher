@@ -135,7 +135,7 @@ if ($result != ''){
 
 
 	# where the magic happens #
-	preg_match_all("/[\p{Lu}][\p{L}'\-]*[\p{L}](( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? 't|tot|te[rn]|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'\-]*[\p{L}])+/u", $result, $matches);
+	preg_match_all("/[\p{Lu}][\p{L}'’\-]*[\p{L}](( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? ['’]t|tot|te[rn]?|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'’\-]*[\p{L}])+/u", $result, $matches);
 	
 	if ($matches){
 		$names = $matches[0];
@@ -262,7 +262,7 @@ if (isset($names) && count($names)){
 }
 
 ?>
-
+ <footer id="footer"><a href="https://github.com/VDK/Orator-Matcher" target="_blank">Code on GitHub</a> <br/>available under MIT license</footer>
 </div>
       </div>
   </div>
