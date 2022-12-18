@@ -1,0 +1,18 @@
+
+
+.sliderValue{
+	width: 4em!important;
+}
+#slider{
+	display: inline-block;
+	margin-top: -2px;
+	clear: both;
+	float: left;
+	width: 100%;
+}
+#slider-range{
+	margin: 0 10px;
+	width: 300px;
+	display: inline-block;
+	vertical-align: middle;
+}
