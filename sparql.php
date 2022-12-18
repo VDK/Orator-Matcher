@@ -38,7 +38,7 @@
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/tinysort/3.2.2/tinysort.js"></script>
-<script type="text/javascript" src="slider.js"></script>
+<!-- <script type="text/javascript" src="slider.js"></script> -->
 <script type="text/javascript" src="plugins/deference/js/deference.js"></script>
 <script type="text/javascript" src="query.js"></script>
 </head>
