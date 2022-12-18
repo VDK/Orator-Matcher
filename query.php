@@ -56,7 +56,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 		}";
 
 			
-		$data = sparqlQuery ($query );
+		$data = sparqlQuery ($query);
 		$occupations = array();
 		$categories  = array();
 		foreach ($data['results']['bindings'] as $key => $item) {

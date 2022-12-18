@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/slider.css">
   <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.11.4/themes/smoothness/theme.css">
 
  <!--  Favicon
@@ -33,9 +34,11 @@
  <!-- Javascripts
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
+
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/tinysort/3.2.2/tinysort.js"></script>
+<script type="text/javascript" src="slider.js"></script>
 <script type="text/javascript" src="plugins/deference/js/deference.js"></script>
 <script type="text/javascript" src="query.js"></script>
 </head>
@@ -55,9 +58,21 @@ if ((!isset($_GET['name']) || !is_array($_GET['name'])) && !isset($_GET['names']
 	echo "<p style='color:red'>bad input</p></div></form>";
 }
 else{ ?>
+
+  <!-- <div id="slider">
+        <div> earliest / latest year of birth </div>
+            <input type="text" id="amount1" value="<?php echo $y1; ?>" data-index="0" class="sliderValue" name="y1" />
+            <div id="slider-range"></div>
+            <input type="text" id="amount2" value="<?php echo $y2; ?>" data-index="1" class="sliderValue" name="y2" />
+          
+        </div> -->
+        <div class="analyse">
+        <p>Include</p>
         <input type="checkbox" id="sportsPersonCheck" name="feature"
                value="sportsPersonCheck" checked />
-        <label for="sportsPersonCheck">include sportspeople</label>
+        <label for="sportsPersonCheck">Athletes</label>
+        <!-- botanists-->
+      </div>
     </div>
 </form>
 <div id='progressbar'></div>

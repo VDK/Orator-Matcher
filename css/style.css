@@ -56,6 +56,37 @@ span.commonslink{
 	padding: 10px;
 	width: 100%;
 }
+.form-wrapper [type="checkbox"],
+.form-wrapper [type="radio"]{
+	width: 20px;
+	height: 25px;
+	padding: 10px;
+	float: left;
+	clear: both;
+	-webkit-box-shadow:none;
+	margin:5px 0 5px 0;
+
+}
+.form-wrapper [type="checkbox"]:focus,
+.form-wrapper [type="radio"]:focus{
+	-webkit-box-shadow:none;
+}
+
+.analyse{
+	float:left;
+	clear:both;
+	text-align:left;
+	width: 100%;
+}
+.analyse p{
+	margin-bottom:0;
+}
+.form-wrapper label{
+	float:left;
+	 padding:5px;
+ margin:0 0 5px;
+ display:block; 
+}
 .form-wrapper textarea.expand{
 	height: 200px;
 
@@ -76,6 +107,11 @@ span.commonslink{
 }
 .remove{
 	float:left;
+
+}
+.remove::after{
+	content:"X";
+	margin-left: 0px;
 }
 
 .form-wrapper .button {
@@ -96,7 +132,9 @@ span.commonslink{
 	color: #fafafa;
 	cursor: pointer;
 	height: 42px;
-	float: right;
+	margin-left: auto;
+    margin-right: auto;
+    clear: both;
 	font: 15px Arial, Helvetica;
 	padding: 0;
 	text-transform: uppercase;

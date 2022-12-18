@@ -7,39 +7,16 @@ use andreskrey\Readability\Configuration;
 $htmlTags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
 $preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", "Director", "University", "Universtiteit", "Assistant", "Executive", "President", "Senior", "Junior", "Research Fellow", "Royal");
 $postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
-$error 	=  '';
+$error 	= '';
 $result = '';
-if (isset($_POST['names']) && $_POST['names'] != ''){
-	$names = trim($_POST['names']);
-	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
-	$result = $names;
-	
-	if(!isset($_POST['analyse']) ){
-		$names = explode("\n", $names);
-		$names = array_filter($names);
-		if (count($names)){
-			$names = array_iunique($names);
-			foreach ($names as $key => $name) {
-				$names[$key] = urlencode($name);
-			}
-			header('Location: sparql.php?names='.implode("|", $names));
-		}
-	}
-	
-}
-elseif (isset($_POST['url']) && $_POST['url'] != '' ){
-	$url = trim($_POST['url']);
-	if (!filter_var($url, FILTER_VALIDATE_URL)){
-		$url = 'https://'.$url;
-	}
-	if (!filter_var($url, FILTER_VALIDATE_URL)){
-		$error .=  'That doesn\'t look like a url';
-	}
-	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/(albums|sets)\/(\d+)/", $url, $matches )){
+
+function handleFlickr($set_id){
+		$result = "";
+		$error = "";
 		$params = array(
-			'api_key'		=> $flickrAPIkey,
+			'api_key'		=> FLICKRAPIKEY,
 			'method'		=> 'flickr.photosets.getInfo',
-			'photoset_id'	=> end($matches),
+			'photoset_id'	=> $set_id,
 			'format'		=> 'php_serial',
 		);
 		$response = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)));
@@ -69,7 +46,8 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 				foreach ($newTags as $tag) {
 					$tagLengths[] = strlen($tag);
 				}
-				//if there are new tags and the lenght of the new tag is longer than 8 characters (no #FYI)
+				//if there are new tags and the lenght of the new tag is longer than 8 characters 
+				//(not interested in really short tags like #FYI)
 				if (count($newTags) > 0 && max($tagLengths) >= 8 ){
 					$params['photo_id'] = $photo['id'];
 					$photoTags = unserialize(file_get_contents('https://api.flickr.com/services/rest/?'.http_build_query($params)))["photo"]["tags"]['tag'];
@@ -83,10 +61,45 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 			}
 			$result = array_unique($result);
 			$result = trim(implode("\n", $result));
+			
 		}
 		else{
-			$error .=  'Photoset ID not recognized<br/>';
+			$error =  'Photoset ID not recognized<br/>';
 		}
+		return array("error" => $error, "result" => $result);
+}
+
+if (isset($_POST['names']) && $_POST['names'] != ''){
+	$names = trim($_POST['names']);
+	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
+	$result = $names;
+	if(isset($_POST['analyse']) && $_POST['analyse'] == 'false'){
+		$names = explode("\n", $names);
+		$names = array_filter($names);
+		if (count($names)){
+			$names = array_iunique($names);
+			foreach ($names as $key => $name) {
+				$names[$key] = urlencode(trim($name));
+			}
+			header('Location: sparql.php?names='. implode("|",$names));
+		}
+	}
+	
+}
+elseif (isset($_POST['url']) && $_POST['url'] != '' ){
+	$url = trim($_POST['url']);
+	if (!filter_var($url, FILTER_VALIDATE_URL)){
+		$url = 'https://'.$url;
+	}
+	if (!filter_var($url, FILTER_VALIDATE_URL)){
+		$error .=  'That doesn\'t look like a url';
+	}
+	//retrieve information about Flickr album/set
+	elseif(preg_match("/(?:https?:\/\/)?(?:www\.)?flickr\.com\/photos\/[^\/]+\/(?:albums|sets)\/(\d+)/", $url, $matches )){
+		$flickr = handleFlickr(end($matches));
+		$result = $flickr['result'];
+		$error .= $flickr['error'];
+		
 	}
 	elseif (is_404($url)) {
 		$error .=  '404 page not found<br/>';
@@ -105,7 +118,7 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 			//might as well use the old method if Readability fails:
 			$ch = curl_init();
 			$request_headers = array();
-			$request_headers[] = 'x-api-key: ' . $postlightAPI;
+			$request_headers[] = 'x-api-key: ' . POSTLIGHTAPI;
 			$request_headers[] = "Content-Type: application/json; charset=utf-8";
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch, CURLOPT_URL, 'https://mercury.postlight.com/parser?url=' . $url);
@@ -124,15 +137,12 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 	}
 }
 if ($result != ''){
-	$result = str_replace($htmlTags,"\n",$result);
+	$result = str_replace($htmlTags," \n",$result);
 	foreach ($preBlack as $value) {
-		$result = preg_replace("/\b".$value."\b/m", "", $result);
+		$result = preg_replace("/\b".$value." \b/m", " ", $result);
 	}
 
-	$result = strip_tags($result);
 	$result = html_entity_decode($result);
-	// $result = mb_convert_encoding( $result, 'UTF-8');
-
 
 	# where the magic happens #
 	preg_match_all("/[\p{Lu}][\p{L}'’\-]*[\p{L}](( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? ['’]t|tot|te[rn]?|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'’\-]*[\p{L}])+/u", $result, $matches);
@@ -164,9 +174,11 @@ elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) &&
 
 function is_404($url) {
     $handle = curl_init($url);
+    curl_setopt($handle, CURLOPT_FOLLOWLOCATION, TRUE);
+ 	curl_setopt($handle, CURLOPT_MAXREDIRS, 5); 
     curl_setopt($handle, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0");
-    /* Get the HTML or whatever is linked in $url. */
+	curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, false);
+   	curl_setopt($handle, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9');/* Get the HTML or whatever is linked in $url. */
     $response = curl_exec($handle);
 
     /* Check for 404 (file not found). */
@@ -214,6 +226,7 @@ function array_iunique($array) {
   <link rel="stylesheet" href="css/normalize.css">
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
 
  <!--  Favicon
   ––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -222,8 +235,11 @@ function array_iunique($array) {
  <!-- Javascripts
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
+
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script type="text/javascript" src="script.js"></script>
+
 </head>
 <body>
 
@@ -233,16 +249,22 @@ function array_iunique($array) {
     <div class="row">
         <form class="form-wrapper"  method="POST"  target='_self' id="form"	>
 			<div style='color:red; clear:both;'><?php echo $error; ?></div>
-		   <div> <input type="text" id="url" placeholder="URL to the list of conference speakers" name='url' >
+			Search for names in on the following webpage:
+		   <div> <input type="text" id="url" placeholder="https://" name='url' >
 
 
-		<div id='showTex' style='clear:both; '>OR a list of names:</div>
+		<div id='showTex' style='clear:both; '><b>OR</b><br/> direct input:</div>
 		<textarea rows='10'  cols='50' name='names' form='form' class='<?php echo (isset($names)? 'retracted' :'expand'); ?>'></textarea>
-		<label class="switch">
-		  <input name='analyse' type="checkbox">
-		  <span class="slider round"></span> Analyse 
-		</label>
+<div class="analyse">
+		<p>Treat the direct input as:</p>
+  <input type="radio" id="analyse_true" name="analyse" value="true"
+         checked>
+  <label for="analyse_true">Text to search for names in</label>
 
+  <input type="radio" id="analyse_false" name="analyse" value="false">
+  <label for="analyse_false">List of names</label>
+   		
+</div>
 		    <input type="submit" class='button' value="go" id="submit">
 		</div> 	
 		</form>
@@ -251,10 +273,11 @@ function array_iunique($array) {
 <?php
 if (isset($names) && count($names)){
 	echo '<form class="form-wrapper" method="POST" action="posttoget.php" >';
+	echo "Optional: remove false positives before going to matching with Wikidata";
 	echo "<ul id='names'>";
 	foreach ($names as $key => $value) {
 
-		echo "<li><span class='remove button'>x</span><span class='word'>".str_replace(" ", "</span> <span class='word'>", $value)."</span><input name='name[]' type='hidden' class='hiddenNames' value='".urlencode($value)."'</li>";
+		echo "<li><span class='remove button' alt='remove button'></span><span class='word'>".str_replace(" ", "</span> <span class='word'>", $value)."</span><input name='name[]' type='hidden' class='hiddenNames' value='".urlencode($value)."'</li>";
 	}
 	echo "</ul>";
 	echo "<input type='submit' class='button' id='go' value='go'/>";	
