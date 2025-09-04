@@ -1,6 +1,20 @@
 <?php
 $srsearch = trim($_GET['srsearch']);
-$query = file_get_contents('https://www.wikidata.org/w/api.php?action=query&list=search&utf8=true&format=json&srlimit=15&srsearch=haswbstatement:"P31=Q5"%20'.urlencode("'".$srsearch."'"));
+$url = "https://www.wikidata.org/w/api.php?action=query&list=search&utf8=true&format=json&srlimit=15&srsearch=" .
+       urlencode('haswbstatement:"P31=Q5" ' . $srsearch);
+
+$opts = [
+    "http" => [
+        "header" => "User-Agent: Orator-Matcher/2.0 (https://veradekok.nl/contact)\r\n"
+    ]
+];
+$context = stream_context_create($opts);
+
+$query = file_get_contents($url, false, $context);
+if ($query === false) {
+    die("Request failed");
+}
+
 $query = json_decode($query, true);
 $query = $query['query'];
 
@@ -77,7 +91,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			$result['sitelinks'] = $item['sitelinks']['value'];
 			$result['isSportsPerson'] = $item['isSportsPerson']['value'];
 			if (isset($item['image'])){
-				$result['image'] = $item['image']['value']."?width=100";
+				$result['image'] = $item['image']['value']."?width=120";
 			}
 			if (isset($item['dateOfBirth'])){
 				$result['dateOfBirth'] = $item['dateOfBirth']['value'];

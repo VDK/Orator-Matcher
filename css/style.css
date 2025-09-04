@@ -203,8 +203,8 @@ padding: 0;
 margin: 0;
  }
 ul.response > li{
-	min-height: 100px;
-	padding-left:110px;
+	min-height: 120px;
+	padding-left:130px;
 	padding-top:5px;	
     padding-right:5px;
 	background:url('placeholder.png') no-repeat left top;
