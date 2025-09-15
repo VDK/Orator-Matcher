@@ -62,7 +62,7 @@ if ($query['searchinfo']['totalhits'] >= 1){
 			  
 			  ?item wikibase:sitelinks ?sitelinks 
 
-			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en,de\". }            
+			  service wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],mul,en,de\". }            
 			}.filter(NOT EXISTS { ?item wdt:P570  [] } 
                   || ?dateOfDeath >= \"".(date("Y")-5)."-01-01T00:00:00Z\"^^xsd:dateTime )
 		 	 .filter(NOT EXISTS { ?item wdt:P569  [] } 
