@@ -279,7 +279,7 @@ function array_iunique($array) {
     <div class="row">
         <form class="form-wrapper"  method="POST"  target='_self' id="form"	>
 			<div style='color:red; clear:both;'><?php echo $error; ?></div>
-			Search for names in on the following webpage:
+			Search for names on the following webpage:
 		   <div> <input type="text" id="url" placeholder="https://" name='url' >
 
 
