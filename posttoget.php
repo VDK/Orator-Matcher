@@ -5,6 +5,7 @@
 // this is a workaround 
 // is this bad? maybe. It does work though.
 
+include_once('slider_vars.php');
 
 if( isset($_POST['name']) && is_array($_POST['name'])){
   header('Location: sparql.php?names='. implode("|", $_POST['name']));

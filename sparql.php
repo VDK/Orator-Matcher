@@ -1,3 +1,6 @@
+<?php
+include_once('slider_vars.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,12 +37,15 @@
  <!-- Javascripts
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 
+<script type="text/javascript">
+  var y1 = <?php echo $y1; ?>;
+  var y2 = <?php echo $y2; ?>;
+</script>
 
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
 <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/tinysort/3.2.2/tinysort.js"></script>
-<!-- <script type="text/javascript" src="slider.js"></script> -->
-<script type="text/javascript" src="plugins/deference/js/deference.js"></script>
+<script type="text/javascript" src="slider.js"></script>
 <script type="text/javascript" src="query.js"></script>
 </head>
 <body>
@@ -49,8 +55,8 @@
   <div class="container" style="margin-top: 10px">
     <div class="row">
 
-<form class="form-wrapper"  id="form"	>
-<a href="index.php">< back home</a>
+<form class="form-wrapper matcher-form"  id="form"	>
+<a href="index.php" class="pageButton homeButton">Back home</a>
   <div>
 
 <?php
@@ -59,18 +65,26 @@ if ((!isset($_GET['name']) || !is_array($_GET['name'])) && !isset($_GET['names']
 }
 else{ ?>
 
-  <!-- <div id="slider">
-        <div> earliest / latest year of birth </div>
+  <div id="slider">
+        <div class="sliderLabel">alive between</div>
+        <div class="sliderControls">
             <input type="text" id="amount1" value="<?php echo $y1; ?>" data-index="0" class="sliderValue" name="y1" />
             <div id="slider-range"></div>
             <input type="text" id="amount2" value="<?php echo $y2; ?>" data-index="1" class="sliderValue" name="y2" />
+        </div>
           
-        </div> -->
+        </div>
         <div class="analyse">
         <p>Include</p>
         <input type="checkbox" id="sportsPersonCheck" name="feature"
                value="sportsPersonCheck" checked />
-        <label for="sportsPersonCheck">Athletes</label>
+        <label for="sportsPersonCheck">Sports people</label>
+        <input type="checkbox" id="orcidCheck" name="feature"
+               value="orcidCheck" checked />
+        <label for="orcidCheck">ORCID people</label>
+        <input type="checkbox" id="peerageCheck" name="feature"
+               value="peerageCheck" checked />
+        <label for="peerageCheck">Peerage people</label>
         <!-- botanists-->
       </div>
     </div>
@@ -93,7 +107,8 @@ else{ ?>
 		$name = trim($name);
 		$name = strip_tags($name);
 		if ($name != ''){
-			echo "<li class='name' weight='-1'>".urldecode($name)."<ul class='response' ></ul></li>";
+			$displayName = htmlspecialchars(urldecode($name), ENT_QUOTES, 'UTF-8');
+			echo "<li class='name' weight='-1'><span class='searchTerm'>".$displayName."</span><ul class='response' ></ul></li>";
 		}
 	}
 	echo "</ul>";

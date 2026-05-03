@@ -6,11 +6,12 @@
 
 
 $(document).ready(function() {
-    var trueValues = [0,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960,1970,1980,1990,2000,2010,new Date().getFullYear()];
+    var trueValues = buildYearScale();
+    var maxPosition = trueValues.length - 1;
     var slider = $("#slider-range").slider({
         range: true,
         min:0,
-        max:100,
+        max:maxPosition,
         values: [idxdate(0, y1), idxdate(1, y2)],
         slide: function(event, ui) {
             var includeLeft  = event.keyCode != $.ui.keyCode.RIGHT;
@@ -26,10 +27,30 @@ $(document).ready(function() {
             
         }
     });
+    function buildYearScale() {
+        var years = [0];
+        addYears(years, 1000, 1800, 50);
+        addYears(years, 1820, 1880, 20);
+        addYears(years, 1890, 1940, 10);
+        addYears(years, 1945, new Date().getFullYear(), 5);
+        return years;
+    }
+
+    function addYears(years, start, end, step) {
+        for (var year = start; year <= end; year += step) {
+            if (years[years.length - 1] !== year) {
+                years.push(year);
+            }
+        }
+        if (years[years.length - 1] !== end) {
+            years.push(end);
+        }
+    }
+
    function findNearest(includeLeft, includeRight, input) {
         var nearest = null;
         var diff = null;
-        for (var i = 0; i <= 100; i++) {
+        for (var i = 0; i <= maxPosition; i++) {
             if ((includeLeft && i <= input) || (includeRight && i >= input)) {
                 var newDiff = Math.abs(input - i);
                 if (diff == null || newDiff < diff) {
@@ -42,9 +63,10 @@ $(document).ready(function() {
     }
    
     function idxdate(sens,date) {
+        date = parseInt(date, 10);
         if (sens==0){
-            key=0;
-            for (var i = 0; i < 100; i++) {
+            var key=0;
+            for (var i = 0; i <= maxPosition; i++) {
                 if (date >= trueValues[i])
                     key=i;
                 else
@@ -52,8 +74,8 @@ $(document).ready(function() {
             }
         }
         else{
-            key=100;
-            for (var i = 100; i > -1; i--) {
+            var key=maxPosition;
+            for (var i = maxPosition; i > -1; i--) {
                 if (date<=trueValues[i]) 
                     key=i;
                 else
@@ -63,7 +85,7 @@ $(document).ready(function() {
         return key;
     }
     function getRealValue(sliderValue) {
-        for (var i = 0; i <= 100; i++) {
+        for (var i = 0; i <= maxPosition; i++) {
             if (i >= sliderValue) {
                 return trueValues[i];
             }
@@ -73,7 +95,7 @@ $(document).ready(function() {
     
     $("input.sliderValue").change(function() {
         var $this = $(this);
-        pos=idxdate($this.data("index"),$this.val());
+        var pos=idxdate($this.data("index"),$this.val());
         $("#slider-range").slider("values", $this.data("index"),pos);
         $($('.hiddenSliderValue')[$this.data("index")]).val($this.val());
     });

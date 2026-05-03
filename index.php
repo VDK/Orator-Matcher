@@ -2,11 +2,9 @@
 // header("Content-type: html/text; charset=utf-8");
 include_once('vendor/autoload.php');
 include_once('variables.php');
+$nameFilters = include('name_filters.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
-$htmlTags = array('</p>','<br />','<br>','<hr />','<hr>','</h1>','</h2>','</h3>','</h4>','</h5>','</h6>', '</div>');
-$preBlack = array('The', 'Professor', "Chief", "Associate", "Doctor", "Acting", "Director", "University", "Universtiteit", "Assistant", "Executive", "President", "Senior", "Junior", "Research Fellow", "Royal");
-$postBlacklist = array( "LIBRARY", "LIBRARIES", "INSTITUTE", "ARCHIVE", "ARCHIVES" ,"REPUBLIC", "DEPARTMENT", "BUREAU", "NATIONAL", "MUSEUM", "FOUNDATION", "COUNCIL", "WIKIMEDIA", "AGENCY", "AWARD", "STUDIO", "PRIZE");
 $error 	= '';
 $result = '';
 
@@ -74,14 +72,13 @@ if (isset($_POST['names']) && $_POST['names'] != ''){
 	$names = preg_replace('/VM\d+:\d/', '', $names); //sneaky bit to remove column counts from Chrome Console output
 	$result = $names;
 	if(isset($_POST['analyse']) && $_POST['analyse'] == 'false'){
-		$names = explode("\n", $names);
-		$names = array_filter($names);
+		$names = normalizeSubmittedNames($names);
 		if (count($names)){
-			$names = array_iunique($names);
 			foreach ($names as $key => $name) {
-				$names[$key] = urlencode(trim($name));
+				$names[$key] = urlencode($name);
 			}
 			header('Location: sparql.php?names='. implode("|",$names));
+			exit;
 		}
 	}
 	
@@ -105,64 +102,11 @@ elseif (isset($_POST['url']) && $_POST['url'] != '' ){
 		$error .=  '404 page not found<br/>';
 	}
 	else{
-		$readability = new Readability(new Configuration());
-		$opts = array('http'=>array('header' => "User-Agent:Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0"));
-		$context = stream_context_create($opts);
-		$html = file_get_contents($url, false, $context);
-
-		try {
-		    $readability->parse($html);
-		    $result = $readability->getContent();
-		    
-		} catch (ParseException $e) {
-			//might as well use the old method if Readability fails:
-			$ch = curl_init();
-			$request_headers = array();
-			$request_headers[] = 'x-api-key: ' . POSTLIGHTAPI;
-			$request_headers[] = "Content-Type: application/json; charset=utf-8";
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_URL, 'https://mercury.postlight.com/parser?url=' . $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
-			$output = json_decode(curl_exec($ch));
-			curl_close($ch);
-
-		    echo sprintf('Error processing text: %s', $e->getMessage());
-		    $result = $output->content;
-		}
-		
-		if ($result == ''){
-			$result = $html;
-		}
+		$result = extractTextFromUrl($url);
 	}
 }
 if ($result != ''){
-	$result = str_replace($htmlTags," \n",$result);
-	foreach ($preBlack as $value) {
-		$result = preg_replace("/\b".$value." \b/m", " ", $result);
-	}
-
-	$result = html_entity_decode($result);
-
-	# where the magic happens #
-	preg_match_all("/[\p{Lu}][\p{L}'’\-]*[\p{L}](( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'’\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? ['’]t|tot|te[rn]?|op|tot|uij?t|bij|aan|voor|von|Mac|Ó) )?([\p{Lu}][\p{L}'’\-]*[\p{L}])+/u", $result, $matches);
-	
-	if ($matches){
-		$names = $matches[0];
-		
-		foreach ($names as $key => $name) {
-			$names[$key] = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)?( ?(Prof|Dr|Mr|Ms)\.?)? (.+)/", "$5", $name);
-			foreach ($postBlacklist as $item) {
-				if(preg_match("/\b".$item."\b/", strtoupper($name))){
-					unset($names[$key]);
-				}
-			}
-		}
-		$names = array_iunique($names);
-		$names = array_filter($names);
-		sort($names);
-	}
-
+	$names = extractCandidateNames($result, $nameFilters);
 	if(count($names) == 0){
 		$error .=  'no content found<br/>';
 	}
@@ -170,6 +114,92 @@ if ($result != ''){
 
 elseif(isset($_POST['names']) && $_POST['names'] == ''|| isset($_POST['url']) && $_POST['url'] ==''){
  $error .=  'no input?';
+}
+
+function extractTextFromUrl($url) {
+	$readability = new Readability(new Configuration());
+	$opts = array('http'=>array('header' => "User-Agent:Mozilla/5.0 (Windows NT 5.1; rv:31.0) Gecko/20100101 Firefox/31.0"));
+	$context = stream_context_create($opts);
+	$html = file_get_contents($url, false, $context);
+	$result = '';
+
+	try {
+	    $readability->parse($html);
+	    $result = $readability->getContent();
+	} catch (ParseException $e) {
+		$result = extractTextWithPostlight($url);
+	}
+	
+	return $result == '' ? $html : $result;
+}
+
+function extractTextWithPostlight($url) {
+	$ch = curl_init();
+	$request_headers = array();
+	$request_headers[] = 'x-api-key: ' . POSTLIGHTAPI;
+	$request_headers[] = "Content-Type: application/json; charset=utf-8";
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch, CURLOPT_URL, 'https://mercury.postlight.com/parser?url=' . $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
+	$output = json_decode(curl_exec($ch));
+	curl_close($ch);
+
+	return isset($output->content) ? $output->content : '';
+}
+
+function extractCandidateNames($text, $filters) {
+	$text = prepareTextForNameExtraction($text, $filters);
+
+	preg_match_all("/[\p{Lu}][\p{L}'\x{2019}\-]*[\p{L}](( ([\p{Lu}][\p{L}'\x{2019}\-]*[\p{L}]))*)( (([\p{Lu}]|Ph|Ch|Th)\.?)+)?(( ([\p{Lu}][\p{L}'\x{2019}\-]*[\p{L}]))*) ((van|de[rsn]?|van de[srn]?|el|(in)? ['\x{2019}]t|tot|te[rn]?|op|tot|uij?t|bij|aan|voor|von|Mac|\x{00D3}) )?([\p{Lu}][\p{L}'\x{2019}\-]*[\p{L}])+/u", $text, $matches);
+	if (!$matches) {
+		return array();
+	}
+
+	$names = array();
+	foreach ($matches[0] as $name) {
+		$name = normalizeCandidateName($name);
+		if ($name != '' && !rejectCandidateName($name, $filters)) {
+			$names[] = $name;
+		}
+	}
+	$names = array_iunique($names);
+	$names = array_filter($names);
+	sort($names);
+
+	return $names;
+}
+
+function prepareTextForNameExtraction($text, $filters) {
+	$text = str_replace($filters['htmlBreakTags'], " \n", $text);
+	foreach ($filters['prefixWords'] as $value) {
+		$text = preg_replace("/\b".$value." \b/m", " ", $text);
+	}
+
+	return html_entity_decode($text);
+}
+
+function normalizeCandidateName($name) {
+	$name = trim($name);
+	$name = preg_replace("/^((Prof|Dr|Mr|Ms)\.?)?( ?(Prof|Dr|Mr|Ms)\.?)? (.+)/", "$5", $name);
+	return trim($name);
+}
+
+function rejectCandidateName($name, $filters) {
+	foreach ($filters['rejectWords'] as $item) {
+		if(preg_match("/\b".$item."\b/", strtoupper($name))){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function normalizeSubmittedNames($names) {
+	$names = explode("\n", $names);
+	$names = array_map('trim', $names);
+	$names = array_filter($names);
+	return array_iunique($names);
 }
 
 function is_404($url) {
