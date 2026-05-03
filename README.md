@@ -75,3 +75,7 @@ Filtering is done client-side after `query.php` returns structured JSON for each
 - Wikidata descriptions are used when available, with generated country/occupation text as fallback.
 - Commons thumbnails are requested at 120px width and displayed in square 120px frames.
 - API keys and generated dependencies should stay out of commits.
+
+## License
+
+Orator Matcher is available under the MIT license.
