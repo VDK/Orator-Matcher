@@ -93,7 +93,8 @@ span.commonslink{
 	top: 8px;
 }
 .form-wrapper textarea,
-.form-wrapper input {
+.form-wrapper input,
+.form-wrapper select {
 	border: 1px solid #CCC;
 	-webkit-box-shadow: 0 1px 1px #ddd inset, 0 1px 0 #FFF;
 	-moz-box-shadow: 0 1px 1px #ddd inset, 0 1px 0 #FFF;
@@ -132,11 +133,29 @@ span.commonslink{
 .analyse p{
 	margin-bottom:0;
 }
+.filterOptions{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+}
+.form-wrapper .filterOption{
+	align-items: center;
+	display: inline-flex;
+	float: none;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	white-space: nowrap;
+}
 .analyse input[type="checkbox"]{
 	clear: none;
 	float: none;
 	margin: 5px 4px 5px 0;
 	vertical-align: middle;
+}
+.form-wrapper .filterOption input[type="checkbox"]{
+	flex: 0 0 auto;
+	margin: 0;
 }
 .analyse input[type="checkbox"] + label{
 	display: inline-block;
@@ -185,7 +204,8 @@ span.commonslink{
 	height: 200px;
 
 }
-.form-wrapper input:focus {
+.form-wrapper input:focus,
+.form-wrapper select:focus {
 	border-color: #aaa;
 	-webkit-box-shadow: 0 1px 1px #bbb inset;
 	-moz-box-shadow: 0 1px 1px #bbb inset;
@@ -370,4 +390,14 @@ ul.response > li{
   background-image: -webkit-linear-gradient(#323232, #2E2E2E 50%, #323232);
   background-image: -moz-linear-gradient(#323232, #2E2E2E 50%, #323232);
   background-image: -o-linear-gradient(#323232, #2E2E2E 50%, #323232);
+}
+
+@media (max-width: 520px){
+	.filterOptions{
+		flex-direction: column;
+		gap: 6px;
+	}
+	.form-wrapper .filterOption{
+		width: 100%;
+	}
 }

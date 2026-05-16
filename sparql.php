@@ -68,23 +68,35 @@ else{ ?>
   <div id="slider">
         <div class="sliderLabel">alive between</div>
         <div class="sliderControls">
-            <input type="text" id="amount1" value="<?php echo $y1; ?>" data-index="0" class="sliderValue" name="y1" />
+            <select id="amount1" data-index="0" class="sliderValue" name="y1">
+              <?php echo sliderYearOptions($y1, array($y1, $y2)); ?>
+            </select>
             <div id="slider-range"></div>
-            <input type="text" id="amount2" value="<?php echo $y2; ?>" data-index="1" class="sliderValue" name="y2" />
+            <select id="amount2" data-index="1" class="sliderValue" name="y2">
+              <?php echo sliderYearOptions($y2, array($y1, $y2)); ?>
+            </select>
         </div>
           
         </div>
         <div class="analyse">
         <p>Include</p>
-        <input type="checkbox" id="sportsPersonCheck" name="feature"
-               value="sportsPersonCheck" checked />
-        <label for="sportsPersonCheck">Sports people</label>
-        <input type="checkbox" id="orcidCheck" name="feature"
-               value="orcidCheck" checked />
-        <label for="orcidCheck">ORCID people</label>
-        <input type="checkbox" id="peerageCheck" name="feature"
-               value="peerageCheck" checked />
-        <label for="peerageCheck">Peerage people</label>
+        <div class="filterOptions">
+          <label class="filterOption" for="sportsPersonCheck">
+            <input type="checkbox" id="sportsPersonCheck" name="feature"
+                   value="sportsPersonCheck" checked />
+            <span>Sports people</span>
+          </label>
+          <label class="filterOption" for="orcidCheck">
+            <input type="checkbox" id="orcidCheck" name="feature"
+                   value="orcidCheck" checked />
+            <span>ORCID people</span>
+          </label>
+          <label class="filterOption" for="peerageCheck">
+            <input type="checkbox" id="peerageCheck" name="feature"
+                   value="peerageCheck" checked />
+            <span>Peerage people</span>
+          </label>
+        </div>
         <!-- botanists-->
       </div>
     </div>

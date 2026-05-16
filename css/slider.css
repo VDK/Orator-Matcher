@@ -1,8 +1,9 @@
 
 
 .sliderValue{
-	width: 4em!important;
+	flex: 0 0 6.5em;
 	text-align: center;
+	width: 6.5em!important;
 }
 #slider{
 	margin: 0 0 12px;
@@ -57,4 +58,15 @@
 #slider-range .ui-slider-handle:focus{
 	box-shadow: 0 0 0 2px rgba(42, 103, 159, .25);
 	outline: none;
+}
+
+@media (max-width: 520px){
+	#slider-range{
+		display: none;
+	}
+	.sliderControls .sliderValue{
+		flex: 1 1 0;
+		min-width: 0;
+		width: auto!important;
+	}
 }

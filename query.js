@@ -27,7 +27,7 @@ $(document).ready(function() {
     setupPager();
     setupOccupationFilters();
     $('#sportsPersonCheck,#orcidCheck,#peerageCheck').on('click', applyFilters);
-    $('input.sliderValue').on('change', applyFilters);
+    $('.sliderValue').on('change', applyFilters);
     $('#slider-range').on('slidestop', applyFilters);
   }
 

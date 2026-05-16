@@ -8,7 +8,7 @@
 include_once('slider_vars.php');
 
 if( isset($_POST['name']) && is_array($_POST['name'])){
-  header('Location: sparql.php?names='. implode("|", $_POST['name']));
+  header('Location: sparql.php?names='. implode("|", $_POST['name']).'&y1='.$y1.'&y2='.$y2);
 }
 
 ?>

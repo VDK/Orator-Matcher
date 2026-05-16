@@ -2,6 +2,7 @@
 // header("Content-type: html/text; charset=utf-8");
 include_once('vendor/autoload.php');
 include_once('variables.php');
+include_once('slider_vars.php');
 $nameFilters = include('name_filters.php');
 use andreskrey\Readability\Readability;
 use andreskrey\Readability\Configuration;
@@ -77,7 +78,7 @@ if (isset($_POST['names']) && $_POST['names'] != ''){
 			foreach ($names as $key => $name) {
 				$names[$key] = urlencode($name);
 			}
-			header('Location: sparql.php?names='. implode("|",$names));
+			header('Location: sparql.php?names='. implode("|",$names).'&y1='.$y1.'&y2='.$y2);
 			exit;
 		}
 	}
