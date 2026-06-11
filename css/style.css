@@ -342,10 +342,11 @@ ul.response > li{
 	margin-top: 2px;
 }
 .loadMoreMatches{
-	margin: 6px 0 2px 132px;
+	margin: 6px 0 2px 0;
 }
 .loadMoreButton{
 	margin-left: 0;
+	width: 100%;
 }
 .word:hover{
 	color:red;

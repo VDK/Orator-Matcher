@@ -66,7 +66,7 @@ function wikidataSearch($searchTerm, $offset, $limit)
 function buildPersonQuery($qid)
 {
 	return "
-		SELECT ?itemLabel ?itemDescription ?image ?dateOfBirth ?dateOfDeath ?occupation ?occupationLabel ?country ?countryLabel ?sitelinks ?isSportsPerson ?hasOrcid ?hasPeerageId ?cattitle ?subcat WHERE {
+		SELECT ?itemLabel ?itemDescription ?image ?dateOfBirth ?dateOfDeath ?dateOfBaptism ?floruit ?workPeriodStart ?workPeriodEnd ?occupation ?occupationLabel ?country ?countryLabel ?sitelinks ?isSportsPerson ?hasOrcid ?hasPeerageId ?cattitle ?subcat WHERE {
 		  {
 			  {
 			    BIND(wd:".$qid." AS ?item).
@@ -75,6 +75,10 @@ function buildPersonQuery($qid)
 			  OPTIONAL { ?item wdt:P18 ?image. }
 			  OPTIONAL { ?item wdt:P569 ?dateOfBirth. }
 			  OPTIONAL { ?item wdt:P570 ?dateOfDeath. }
+			  OPTIONAL { ?item wdt:P1636 ?dateOfBaptism. }
+			  OPTIONAL { ?item wdt:P1317 ?floruit. }
+			  OPTIONAL { ?item wdt:P2031 ?workPeriodStart. }
+			  OPTIONAL { ?item wdt:P2032 ?workPeriodEnd. }
 			  OPTIONAL { ?item wdt:P106 ?occupation. }
 			  OPTIONAL { ?item wdt:P27 ?country. }
 			  OPTIONAL { ?link schema:about ?item; schema:isPartOf <https://commons.wikimedia.org/>; schema:name ?cattitle1. }
@@ -179,6 +183,18 @@ function normalizePersonResult($data, $qid)
 	}
 	if (isset($item['dateOfDeath']['value'])) {
 		$result['dateOfDeath'] = $item['dateOfDeath']['value'];
+	}
+	if (isset($item['dateOfBaptism']['value'])) {
+		$result['dateOfBaptism'] = $item['dateOfBaptism']['value'];
+	}
+	if (isset($item['floruit']['value'])) {
+		$result['floruit'] = $item['floruit']['value'];
+	}
+	if (isset($item['workPeriodStart']['value'])) {
+		$result['workPeriodStart'] = $item['workPeriodStart']['value'];
+	}
+	if (isset($item['workPeriodEnd']['value'])) {
+		$result['workPeriodEnd'] = $item['workPeriodEnd']['value'];
 	}
 	if (isset($item['cattitle']['value'])) {
 		$categories[] = str_replace('Category:', '', $item['cattitle']['value']);

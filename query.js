@@ -389,15 +389,15 @@ $(document).ready(function() {
   function matchesAliveInWindow(item) {
     var startYear = parseInt($('#amount1').val(), 10);
     var endYear = parseInt($('#amount2').val(), 10);
-    var birthYear = yearFromDate(item.dateOfBirth);
-    var deathYear = yearFromDate(item.dateOfDeath);
-    var latestPossibleYear = deathYear;
+    var bounds = candidateLifeBounds(item);
+    var earliestKnownYear = bounds.earliestKnownYear;
+    var latestPossibleYear = bounds.latestKnownYear;
 
-    if (latestPossibleYear === null && birthYear !== null) {
-      latestPossibleYear = birthYear + assumedMaxAge;
+    if (latestPossibleYear === null && earliestKnownYear !== null) {
+      latestPossibleYear = earliestKnownYear + assumedMaxAge;
     }
 
-    return (latestPossibleYear === null || latestPossibleYear >= startYear) && (birthYear === null || birthYear <= endYear);
+    return (latestPossibleYear === null || latestPossibleYear >= startYear) && (earliestKnownYear === null || earliestKnownYear <= endYear);
   }
 
   function matchesBaseFilters(item) {
@@ -659,8 +659,13 @@ $(document).ready(function() {
   }
 
   function yearRange(item) {
-    var birthYear = yearFromDate(item.dateOfBirth);
-    var deathYear = yearFromDate(item.dateOfDeath);
+    var bounds = candidateLifeBounds(item);
+    var birthYear = bounds.birthYear;
+    var deathYear = bounds.deathYear;
+    var baptismYear = bounds.baptismYear;
+    var floruitYear = bounds.floruitYear;
+    var workPeriodStartYear = bounds.workPeriodStartYear;
+    var workPeriodEndYear = bounds.workPeriodEndYear;
     if (birthYear !== null && deathYear !== null) {
       return birthYear + '-' + deathYear;
     }
@@ -670,7 +675,53 @@ $(document).ready(function() {
     if (deathYear !== null) {
       return 'd. ' + deathYear;
     }
+    if (baptismYear !== null) {
+      return 'bapt. ' + baptismYear;
+    }
+    if (workPeriodStartYear !== null && workPeriodEndYear !== null) {
+      return 'work ' + workPeriodStartYear + '-' + workPeriodEndYear;
+    }
+    if (workPeriodStartYear !== null) {
+      return 'work from ' + workPeriodStartYear;
+    }
+    if (workPeriodEndYear !== null) {
+      return 'work until ' + workPeriodEndYear;
+    }
+    if (floruitYear !== null) {
+      return 'fl. ' + floruitYear;
+    }
     return '';
+  }
+
+  function candidateLifeBounds(item) {
+    var birthYear = yearFromDate(item.dateOfBirth);
+    var deathYear = yearFromDate(item.dateOfDeath);
+    var baptismYear = yearFromDate(item.dateOfBaptism);
+    var floruitYear = yearFromDate(item.floruit);
+    var workPeriodStartYear = yearFromDate(item.workPeriodStart);
+    var workPeriodEndYear = yearFromDate(item.workPeriodEnd);
+    var earliestKnownYear = firstYear([birthYear, baptismYear, workPeriodStartYear, floruitYear]);
+    var latestKnownYear = firstYear([deathYear, workPeriodEndYear, floruitYear, workPeriodStartYear]);
+
+    return {
+      birthYear: birthYear,
+      deathYear: deathYear,
+      baptismYear: baptismYear,
+      floruitYear: floruitYear,
+      workPeriodStartYear: workPeriodStartYear,
+      workPeriodEndYear: workPeriodEndYear,
+      earliestKnownYear: earliestKnownYear,
+      latestKnownYear: latestKnownYear
+    };
+  }
+
+  function firstYear(years) {
+    for (var i = 0; i < years.length; i++) {
+      if (years[i] !== null) {
+        return years[i];
+      }
+    }
+    return null;
   }
 
   function yearFromDate(value) {
