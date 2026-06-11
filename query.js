@@ -26,6 +26,7 @@ $(document).ready(function() {
   function setupControls() {
     setupPager();
     setupOccupationFilters();
+    updateFeatureCounts();
     $('#sportsPersonCheck,#orcidCheck,#peerageCheck').on('click', applyFilters);
     $('.sliderValue').on('change', applyFilters);
     $('#slider-range').on('slidestop', applyFilters);
@@ -69,6 +70,7 @@ $(document).ready(function() {
     currentPage = Math.max(0, Math.min(page, totalPages - 1));
     refreshPage();
     rebuildOccupationFilters();
+    updateFeatureCounts();
     renderVisibleNames();
     reorderVisibleNames();
     loadVisibleNames();
@@ -143,6 +145,7 @@ $(document).ready(function() {
       $name.data('search-offset', result.offset + result.limit);
       $name.data('has-more', result.hasMore);
       rebuildOccupationFilters();
+      updateFeatureCounts();
       renderName($name);
       reorderVisibleNames();
       refreshPage();
@@ -289,9 +292,40 @@ $(document).ready(function() {
 
   function applyFilters() {
     rebuildOccupationFilters();
+    updateFeatureCounts();
     renderVisibleNames();
     reorderVisibleNames();
     refreshPage();
+  }
+
+  function updateFeatureCounts() {
+    var counts = {
+      sports: 0,
+      orcid: 0,
+      peerage: 0
+    };
+
+    visibleNames().each(function() {
+      var matches = $(this).data('matches') || [];
+      for (var i = 0; i < matches.length; i++) {
+        if (!matchesAliveInWindow(matches[i]) || !matchesOccupationFilter(matches[i])) {
+          continue;
+        }
+        if (matches[i].isSportsPerson === true) {
+          counts.sports++;
+        }
+        if (matches[i].hasOrcid === true) {
+          counts.orcid++;
+        }
+        if (matches[i].hasPeerageId === true) {
+          counts.peerage++;
+        }
+      }
+    });
+
+    $('#sportsPersonCount').text('(' + counts.sports + ')');
+    $('#orcidCount').text('(' + counts.orcid + ')');
+    $('#peerageCount').text('(' + counts.peerage + ')');
   }
 
   function renderVisibleNames() {
@@ -561,53 +595,89 @@ $(document).ready(function() {
     var synonymMap = {
       'kingdom of the netherlands': ['dutch', 'netherlands', 'holland'],
       'netherlands': ['dutch', 'holland'],
-      'russia': ['russian'],
-      'russian empire': ['russian'],
-      'soviet union': ['soviet', 'ussr'],
-      'united states': ['american', 'usa', 'u s'],
+      'dutch republic': ['dutch', 'holland'],
+      'united states': ['american', 'usa', 'u s', 'u.s.'],
       'united kingdom': ['british', 'english', 'scottish', 'welsh', 'irish', 'uk'],
       'united kingdom of great britain and ireland': ['british', 'english', 'scottish', 'welsh', 'irish', 'uk'],
-      'germany': ['german', 'german born'],
+      'england': ['english', 'british'],
+      'scotland': ['scottish', 'british'],
+      'wales': ['welsh', 'british'],
+      'ireland': ['irish'],
       'france': ['french'],
+      'kingdom of france': ['french'],
+      'germany': ['german', 'german born'],
+      'german empire': ['german'],
+      'prussia': ['prussian', 'german'],
+      'east germany': ['east german', 'german'],
+      'west germany': ['west german', 'german'],
+      'austria': ['austrian'],
+      'austria-hungary': ['austro-hungarian', 'austrian', 'hungarian'],
+      'switzerland': ['swiss'],
+      'italy': ['italian'],
+      'spain': ['spanish'],
+      'portugal': ['portuguese'],
+      'belgium': ['belgian'],
+      'luxembourg': ['luxembourgish'],
       'kingdom of denmark': ['danish', 'denmark'],
       'denmark': ['danish'],
+      'norway': ['norwegian'],
       'sweden': ['swedish'],
       'finland': ['finnish'],
       'iceland': ['icelandic'],
-      'ireland': ['irish'],
-      'austria': ['austrian'],
-      'switzerland': ['swiss'],
-      'norway': ['norwegian'],
-      'portugal': ['portuguese'],
-      'croatia': ['croatian'],
-      'czech republic': ['czech', 'czechia', 'czechoslovak'],
-      'czechia': ['czech', 'czech republic', 'czechoslovak'],
-      'czechoslovakia': ['czech', 'czechoslovak'],
-      'italy': ['italian'],
-      'spain': ['spanish'],
-      'belgium': ['belgian'],
       'poland': ['polish'],
       'hungary': ['hungarian'],
       'romania': ['romanian'],
       'greece': ['greek'],
       'turkey': ['turkish'],
-      'serbia': ['serbian'],
-      'slovenia': ['slovenian'],
-      'slovakia': ['slovak'],
+      'ottoman empire': ['ottoman', 'turkish'],
+      'russia': ['russian'],
+      'russian empire': ['russian'],
+      'soviet union': ['soviet', 'ussr', 'russian'],
       'ukraine': ['ukrainian'],
+      'belarus': ['belarusian'],
+      'lithuania': ['lithuanian'],
+      'latvia': ['latvian'],
+      'estonia': ['estonian'],
+      'czech republic': ['czech', 'czechia', 'czechoslovak'],
+      'czechia': ['czech', 'czech republic', 'czechoslovak'],
+      'czechoslovakia': ['czech', 'czechoslovak', 'slovak'],
+      'slovakia': ['slovak'],
+      'slovenia': ['slovenian'],
+      'croatia': ['croatian'],
+      'serbia': ['serbian'],
+      'yugoslavia': ['yugoslav', 'serbian', 'croatian', 'slovenian'],
+      'bosnia and herzegovina': ['bosnian', 'herzegovinian'],
+      'bulgaria': ['bulgarian'],
+      'albania': ['albanian'],
       'canada': ['canadian'],
       'australia': ['australian'],
       'new zealand': ['new zealand'],
       'japan': ['japanese'],
       'china': ['chinese'],
       'india': ['indian'],
+      'indonesia': ['indonesian'],
+      'philippines': ['filipino', 'philippine'],
+      'south korea': ['south korean', 'korean'],
+      'north korea': ['north korean', 'korean'],
       'israel': ['israeli'],
+      'iran': ['iranian', 'persian'],
+      'iraq': ['iraqi'],
+      'egypt': ['egyptian'],
+      'morocco': ['moroccan'],
+      'tunisia': ['tunisian'],
+      'algeria': ['algerian'],
+      'south africa': ['south african'],
+      'nigeria': ['nigerian'],
+      'kenya': ['kenyan'],
+      'ethiopia': ['ethiopian'],
       'mexico': ['mexican'],
       'brazil': ['brazilian'],
       'argentina': ['argentine', 'argentinian'],
       'chile': ['chilean'],
       'colombia': ['colombian'],
-      'south africa': ['south african']
+      'peru': ['peruvian'],
+      'venezuela': ['venezuelan'],
+      'uruguay': ['uruguayan']
     };
 
     return synonymMap[normalized] || [];

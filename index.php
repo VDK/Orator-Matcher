@@ -316,7 +316,7 @@ if (isset($names) && count($names)){
 }
 
 ?>
- <footer id="footer"><a href="https://github.com/VDK/Orator-Matcher" target="_blank">Code on GitHub</a> <br/>available under the MIT license</footer>
+ <footer id="footer">Orator Matcher by <a href="https://www.veradekok.nl/" target="_blank">Vera de Kok</a><br/><a href="https://github.com/VDK/Orator-Matcher" target="_blank">Code on GitHub</a>, available under the MIT license</footer>
 </div>
       </div>
   </div>

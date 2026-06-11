@@ -84,17 +84,17 @@ else{ ?>
           <label class="filterOption" for="sportsPersonCheck">
             <input type="checkbox" id="sportsPersonCheck" name="feature"
                    value="sportsPersonCheck" checked />
-            <span>Sports people</span>
+            <span>Sports people <span class="featureCount" id="sportsPersonCount">(0)</span></span>
           </label>
           <label class="filterOption" for="orcidCheck">
             <input type="checkbox" id="orcidCheck" name="feature"
                    value="orcidCheck" checked />
-            <span>ORCID people</span>
+            <span>ORCID people <span class="featureCount" id="orcidCount">(0)</span></span>
           </label>
           <label class="filterOption" for="peerageCheck">
             <input type="checkbox" id="peerageCheck" name="feature"
                    value="peerageCheck" checked />
-            <span>Peerage people</span>
+            <span>Peerage people <span class="featureCount" id="peerageCount">(0)</span></span>
           </label>
         </div>
         <!-- botanists-->
@@ -127,7 +127,9 @@ else{ ?>
 }
 
 
-?> 	 </div>
+?>
+    <footer id="footer">Orator Matcher by <a href="https://www.veradekok.nl/" target="_blank">Vera de Kok</a><br/><a href="https://github.com/VDK/Orator-Matcher" target="_blank">Code on GitHub</a>, available under the MIT license</footer>
+ 	 </div>
   </div>
 
 <!-- End Document
