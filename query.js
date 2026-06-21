@@ -1,6 +1,8 @@
 $(document).ready(function() {
   var pageSize = 30;
   var assumedMaxAge = 110;
+  var assumedYearsAfterWorkStart = 80;
+  var assumedYearsAfterWorkEnd = 30;
   var currentPage = 0;
   var $names = $('ul#names > li.name');
   var occupationFilters = {};
@@ -771,7 +773,21 @@ $(document).ready(function() {
     var workPeriodStartYear = yearFromDate(item.workPeriodStart);
     var workPeriodEndYear = yearFromDate(item.workPeriodEnd);
     var earliestKnownYear = firstYear([birthYear, baptismYear, workPeriodStartYear, floruitYear]);
-    var latestKnownYear = firstYear([deathYear, workPeriodEndYear, floruitYear, workPeriodStartYear]);
+    var latestKnownYear = deathYear;
+
+    if (latestKnownYear === null) {
+      if (birthYear !== null) {
+        latestKnownYear = birthYear + assumedMaxAge;
+      } else if (baptismYear !== null) {
+        latestKnownYear = baptismYear + assumedMaxAge;
+      } else if (workPeriodEndYear !== null) {
+        latestKnownYear = workPeriodEndYear + assumedYearsAfterWorkEnd;
+      } else if (floruitYear !== null) {
+        latestKnownYear = floruitYear + assumedYearsAfterWorkStart;
+      } else if (workPeriodStartYear !== null) {
+        latestKnownYear = workPeriodStartYear + assumedYearsAfterWorkStart;
+      }
+    }
 
     return {
       birthYear: birthYear,
